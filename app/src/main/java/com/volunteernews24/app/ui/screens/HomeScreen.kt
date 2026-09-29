@@ -40,6 +40,7 @@ fun HomeScreen(
     isLoading: Boolean,
     isOffline: Boolean, // Kept for compatibility, though we are online-only now
     articles: List<Article>,
+    categories: List<com.volunteernews24.app.data.model.Category>,
     currentPage: Int,
     onNextPage: () -> Unit,
     onPreviousPage: () -> Unit,
@@ -49,6 +50,7 @@ fun HomeScreen(
     searchResults: List<Article>,
     onSearchQueryChange: (String) -> Unit,
     onArticleClick: (Article) -> Unit,
+    onCategoryClick: (com.volunteernews24.app.data.model.Category) -> Unit,
     onBookmarkClick: (String) -> Unit,
     onAboutClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -74,57 +76,56 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 4.dp)
-                        ) {
-                            Text(
-                                text = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale("bn", "BD")).format(Date()),
-                                fontSize = 12.sp,
-                                color = androidx.compose.ui.graphics.Color.DarkGray
-                            )
-                            
-                            if (weatherInfo != null) {
-                                Text(
-                                    text = " | ${weatherInfo.city}: ${weatherInfo.temperatureCelsius}°C",
-                                    fontSize = 12.sp,
-                                    color = VNRed,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                        }
-
-                        val context = androidx.compose.ui.platform.LocalContext.current
-                        val imageLoader = remember {
-                            coil.ImageLoader.Builder(context)
-                                .components { add(coil.decode.SvgDecoder.Factory()) }
-                                .build()
-                        }
-                        AsyncImage(
-                            model = R.raw.logo,
-                            imageLoader = imageLoader,
-                            contentDescription = "VolunteerNews24 Logo",
-                            modifier = Modifier
-                                .height(48.dp)
-                                .fillMaxWidth()
-                                .padding(bottom = 4.dp),
-                            contentScale = ContentScale.Fit,
-                            alignment = Alignment.Center
+            Column(
+                modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface)
+            ) {
+                // Black Top Bar
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(androidx.compose.ui.graphics.Color(0xFF151515))
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = SimpleDateFormat("EEEE, dd MMMM, yyyy", Locale("bn", "BD")).format(Date()),
+                        fontSize = 11.sp,
+                        color = androidx.compose.ui.graphics.Color.LightGray
+                    )
+                    
+                    if (weatherInfo != null) {
+                        Text(
+                            text = "${weatherInfo.city} | ${weatherInfo.temperatureCelsius}°C ☁️",
+                            fontSize = 11.sp,
+                            color = androidx.compose.ui.graphics.Color.LightGray
                         )
                     }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = androidx.compose.ui.graphics.Color.White,
-                    titleContentColor = androidx.compose.ui.graphics.Color.Black
-                )
-            )
+                }
+
+                // Logo
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val imageLoader = remember {
+                    coil.ImageLoader.Builder(context)
+                        .components { add(coil.decode.SvgDecoder.Factory()) }
+                        .build()
+                }
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AsyncImage(
+                        model = R.raw.logo,
+                        imageLoader = imageLoader,
+                        contentDescription = "VolunteerNews24 Logo",
+                        modifier = Modifier
+                            .fillMaxWidth(0.65f)
+                            .height(65.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+            }
         }
     ) { paddingValues ->
         PullToRefreshBox(
@@ -146,21 +147,48 @@ fun HomeScreen(
             ) {
                 // Search Bar
                 item {
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = onSearchQueryChange,
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text(stringResource(R.string.search_hint)) },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = onSearchQueryChange,
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text(stringResource(R.string.search_hint)) },
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(30.dp),
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent
+                            )
                         )
-                    )
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        // Category Horizontal List
+                        if (categories.isNotEmpty()) {
+                            LazyRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(categories) { category ->
+                                    FilterChip(
+                                        selected = false,
+                                        onClick = { onCategoryClick(category) },
+                                        label = { Text(category.name, fontWeight = FontWeight.Bold) },
+                                        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                            labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
 
                 if (isOffline) {
@@ -199,74 +227,128 @@ fun HomeScreen(
                     }
                 } else if (articles.isNotEmpty()) {
                     
-                    // Split articles into Featured, Latest, Popular, and Running
-                    val featuredArticle = articles.firstOrNull { it.imageUrl.isNotBlank() }
-                    val remainingArticles = if (featuredArticle != null) articles.filter { it.url != featuredArticle.url } else articles
+                    if (currentPage == 1) {
+                        // Split articles into Featured, Latest, Popular, and Running
+                        val featuredArticles = articles.filter { it.imageUrl.isNotBlank() }.take(3)
+                        val remainingArticles = articles.filterNot { featuredArticles.contains(it) }
 
-                    val latestNews = remainingArticles.take(5)
-                    val popularNews = remainingArticles.drop(5).take(5)
-                    val runningNews = remainingArticles.drop(10)
+                        val latestNews = remainingArticles.take(5)
+                        val popularNews = remainingArticles.drop(5).take(5)
+                        val runningNews = remainingArticles.drop(10)
 
-                    // 0. Featured News Section
-                    if (featuredArticle != null) {
-                        item {
-                            FeaturedArticleCard(
-                                article = featuredArticle,
-                                onClick = { onArticleClick(featuredArticle) }
-                            )
+                        // 0. Featured News Slider
+                        if (featuredArticles.isNotEmpty()) {
+                            item {
+                                val pagerState = androidx.compose.foundation.pager.rememberPagerState(pageCount = { featuredArticles.size })
+                                
+                                // Auto-cycle logic
+                                LaunchedEffect(pagerState.currentPage) {
+                                    kotlinx.coroutines.delay(3500)
+                                    val nextPage = (pagerState.currentPage + 1) % featuredArticles.size
+                                    pagerState.animateScrollToPage(nextPage)
+                                }
+
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    androidx.compose.foundation.pager.HorizontalPager(
+                                        state = pagerState,
+                                        modifier = Modifier.fillMaxWidth().height(230.dp)
+                                    ) { page ->
+                                        val article = featuredArticles[page]
+                                        FeaturedArticleCard(
+                                            article = article,
+                                            onClick = { onArticleClick(article) }
+                                        )
+                                    }
+                                    
+                                    // Pager indicators
+                                    Row(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 8.dp),
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        repeat(featuredArticles.size) { iteration ->
+                                            val color = if (pagerState.currentPage == iteration) VNRed else androidx.compose.ui.graphics.Color.LightGray
+                                            Box(
+                                                modifier = Modifier
+                                                    .padding(2.dp)
+                                                    .background(color, androidx.compose.foundation.shape.CircleShape)
+                                                    .size(6.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
-                    }
 
-                    // 1. Running News (Scrolling Marquee for Headlines)
+                        // 1. Running News (Breaking News Ticker)
                         if (runningNews.isNotEmpty()) {
                             item {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .background(MaterialTheme.colorScheme.surfaceVariant, shape = MaterialTheme.shapes.small)
-                                        .padding(8.dp)
+                                        .background(androidx.compose.ui.graphics.Color(0xFFFFF0F0), shape = MaterialTheme.shapes.small)
+                                        .padding(4.dp)
                                 ) {
-                                    Text(
-                                        text = "শিরোনাম:",
-                                        fontWeight = FontWeight.Bold,
-                                        color = VNRed,
-                                        modifier = Modifier.padding(end = 8.dp)
-                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .background(VNRed, shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = "তাজা খবর",
+                                            fontWeight = FontWeight.Bold,
+                                            color = androidx.compose.ui.graphics.Color.White,
+                                            fontSize = 12.sp
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = runningNews.joinToString(" • ") { it.title },
                                         modifier = Modifier.basicMarquee(
                                             iterations = Int.MAX_VALUE,
-                                            velocity = 30.dp
+                                            velocity = 35.dp
                                         ),
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = VNRed,
+                                        fontWeight = FontWeight.Medium
                                     )
                                 }
                             }
                         }
 
-                    // 2. Latest News
-                    if (latestNews.isNotEmpty()) {
-                        item {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            SectionHeader(title = "সর্বশেষ সংবাদ")
+                        // 2. Latest News
+                        if (latestNews.isNotEmpty()) {
+                            item {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                SectionHeader(title = "সর্বশেষ সংবাদ")
+                            }
+                            items(latestNews) { article ->
+                                ArticleCard(
+                                    article = article,
+                                    onClick = { onArticleClick(article) },
+                                    onBookmarkClick = { onBookmarkClick(article.url) }
+                                )
+                            }
                         }
-                        items(latestNews) { article ->
-                            ArticleCard(
-                                article = article,
-                                onClick = { onArticleClick(article) },
-                                onBookmarkClick = { onBookmarkClick(article.url) }
-                            )
-                        }
-                    }
 
-                    // 3. Popular News
-                    if (popularNews.isNotEmpty()) {
-                        item {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            SectionHeader(title = "জনপ্রিয় সংবাদ")
+                        // 3. Popular News
+                        if (popularNews.isNotEmpty()) {
+                            item {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                SectionHeader(title = "জনপ্রিয় সংবাদ")
+                            }
+                            items(popularNews) { article ->
+                                ArticleCard(
+                                    article = article,
+                                    onClick = { onArticleClick(article) },
+                                    onBookmarkClick = { onBookmarkClick(article.url) }
+                                )
+                            }
                         }
-                        items(popularNews) { article ->
+                    } else {
+                        // For Page 2 and above, just display a flat list of articles
+                        items(articles) { article ->
                             ArticleCard(
                                 article = article,
                                 onClick = { onArticleClick(article) },
@@ -274,7 +356,6 @@ fun HomeScreen(
                             )
                         }
                     }
-                    
                 } else if (!isLoading) {
                     item {
                         Box(

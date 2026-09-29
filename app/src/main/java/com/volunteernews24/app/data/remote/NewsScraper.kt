@@ -29,9 +29,11 @@ object NewsScraper {
             val url = if (page > 1) "$safeUrl/page/$page/" else safeUrl
             val doc = fetchDocument(url)
 
-            // Extract featured carousel articles
-            doc.select(".mg-blog-post.lg.back-img").forEach { element ->
-                parseCarouselArticle(element)?.let { articles.add(it) }
+            if (page == 1) {
+                // Extract featured carousel articles
+                doc.select(".mg-blog-post.lg.back-img").forEach { element ->
+                    parseCarouselArticle(element)?.let { articles.add(it) }
+                }
             }
 
             // Extract latest news articles from the main content area
@@ -39,13 +41,15 @@ object NewsScraper {
                 parseListArticle(element)?.let { articles.add(it) }
             }
 
-            // Extract from widget/sidebar latest posts
-            doc.select(".mg-posts-sec .mg-blog-post-3").forEach { element ->
-                parseWidgetArticle(element)?.let { articles.add(it) }
+            if (page == 1) {
+                // Extract from widget/sidebar latest posts
+                doc.select(".mg-posts-sec .mg-blog-post-3").forEach { element ->
+                    parseWidgetArticle(element)?.let { articles.add(it) }
+                }
             }
 
             // Extract from general post listings
-            doc.select(".mg-blog-post-box .row .col-md-6, .mg-blog-post-box .row .col-md-4").forEach { element ->
+            doc.select(".mg-blog-post-box .row .col-md-6, .mg-blog-post-box .row .col-md-4, .type-post").forEach { element ->
                 parseGridArticle(element)?.let { articles.add(it) }
             }
 

@@ -144,6 +144,7 @@ fun VNNavGraph(
                     isLoading = uiState.isLoading,
                     isOffline = uiState.isOffline,
                     articles = uiState.articles,
+                    categories = uiState.categories,
                     currentPage = uiState.homePage,
                     onNextPage = { viewModel.nextHomePage() },
                     onPreviousPage = { viewModel.previousHomePage() },
@@ -160,6 +161,11 @@ fun VNNavGraph(
                         navController.navigate("article_detail/$encodedUrl")
                     },
                     onBookmarkClick = { url -> viewModel.toggleBookmark(url) },
+                    onCategoryClick = { category ->
+                        val encodedUrl = URLEncoder.encode(category.url, StandardCharsets.UTF_8.toString())
+                        val encodedName = URLEncoder.encode(category.name, StandardCharsets.UTF_8.toString())
+                        navController.navigate("category/$encodedName/$encodedUrl")
+                    },
                     onAboutClick = { navController.navigate("about") }
                 )
             }

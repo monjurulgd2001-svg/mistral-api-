@@ -85,7 +85,7 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
     fun loadHomeArticles(page: Int = 1) {
         if (page < 1) return
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null, homePage = page) }
+            _uiState.update { it.copy(isLoading = true, error = null, homePage = page, articles = emptyList()) }
             try {
                 val articles = repository.getHomeArticles(page)
                 // If page > 1 and articles is empty, we might have hit the end, but let's just show it.
