@@ -33,6 +33,12 @@ class MainActivity : ComponentActivity() {
     private val viewModel: NewsViewModel by viewModels()
     private val themeViewModel: ThemeViewModel by viewModels()
 
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        // Handle result if needed
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install splash screen before super.onCreate
         installSplashScreen()
@@ -42,7 +48,7 @@ class MainActivity : ComponentActivity() {
         // Request Notification Permission for Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                registerForActivityResult(ActivityResultContracts.RequestPermission()) {}.launch(Manifest.permission.POST_NOTIFICATIONS)
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
         
