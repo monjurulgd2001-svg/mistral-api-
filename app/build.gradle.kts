@@ -76,6 +76,7 @@ dependencies {
 
     // Coil (Image Loading for Compose)
     implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation("io.coil-kt:coil-svg:2.7.0")
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))

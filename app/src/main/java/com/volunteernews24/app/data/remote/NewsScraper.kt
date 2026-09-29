@@ -25,7 +25,8 @@ object NewsScraper {
     suspend fun fetchHomeArticles(page: Int = 1): List<Article> = withContext(Dispatchers.IO) {
         val articles = mutableListOf<Article>()
         try {
-            val url = if (page > 1) "$BASE_URL/page/$page" else BASE_URL
+            val safeUrl = BASE_URL.trimEnd('/')
+            val url = if (page > 1) "$safeUrl/page/$page/" else safeUrl
             val doc = fetchDocument(url)
 
             // Extract featured carousel articles
@@ -60,16 +61,12 @@ object NewsScraper {
     suspend fun fetchCategoryArticles(categoryUrl: String, page: Int = 1): List<Article> = withContext(Dispatchers.IO) {
         val articles = mutableListOf<Article>()
         try {
-            val url = if (page > 1) "$categoryUrl/page/$page" else categoryUrl
+            val safeUrl = categoryUrl.trimEnd('/')
+            val url = if (page > 1) "$safeUrl/page/$page/" else safeUrl
             val doc = fetchDocument(url)
 
             // Category pages typically list articles in a grid/list format
-            doc.select(".mg-blog-post-3, .mg-blog-post-2").forEach { element ->
-                parseGenericArticle(element)?.let { articles.add(it) }
-            }
-
-            // Also parse any article cards in the main content
-            doc.select("article, .mg-blog-post").forEach { element ->
+            doc.select("article, .mg-blog-post, .mg-posts-sec-inner .mg-blog-post-3, .type-post").forEach { element ->
                 parseGenericArticle(element)?.let { articles.add(it) }
             }
         } catch (e: Exception) {
@@ -273,7 +270,7 @@ object NewsScraper {
     }
 
     private fun parseGenericArticle(element: Element): Article? {
-        val titleLink = element.selectFirst("h4.title a, h3.title a, h2.title a, .entry-title a, a[href*=archives]") ?: return null
+        val titleLink = element.selectFirst("h1 a, h2 a, h3 a, h4 a, .entry-title a, .title a") ?: return null
         val url = titleLink.absUrl("href").takeIf { it.isNotBlank() } ?: return null
         val title = titleLink.text().trim().takeIf { it.isNotBlank() } ?: return null
 

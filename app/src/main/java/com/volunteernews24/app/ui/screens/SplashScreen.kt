@@ -1,107 +1,54 @@
 package com.volunteernews24.app.ui.screens
 
-import androidx.compose.animation.core.*
+import android.annotation.SuppressLint
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.delay
 
+@SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun AnimatedSplashScreen(
     onSplashFinished: () -> Unit
 ) {
-    var startAnimation by remember { mutableStateOf(false) }
-
     LaunchedEffect(key1 = true) {
-        startAnimation = true
-        delay(2500) // Duration of the splash screen
+        // Wait for the HTML/CSS animation to finish (around 4.5 seconds based on CSS keyframes)
+        delay(4500)
         onSplashFinished()
     }
-
-    // "24" Animation properties (3D gliding effect)
-    val offset24 by animateFloatAsState(
-        targetValue = if (startAnimation) 0f else 300f,
-        animationSpec = tween(
-            durationMillis = 1500,
-            easing = FastOutSlowInEasing
-        )
-    )
-
-    val scale24 by animateFloatAsState(
-        targetValue = if (startAnimation) 1f else 3f,
-        animationSpec = tween(
-            durationMillis = 1500,
-            easing = FastOutSlowInEasing
-        )
-    )
-
-    val rotation24 by animateFloatAsState(
-        targetValue = if (startAnimation) 0f else 180f,
-        animationSpec = tween(
-            durationMillis = 1500,
-            easing = FastOutSlowInEasing
-        )
-    )
-
-    // "Welcome" fade in
-    val alphaWelcome by animateFloatAsState(
-        targetValue = if (startAnimation) 1f else 0f,
-        animationSpec = tween(durationMillis = 1000)
-    )
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
-        contentAlignment = Alignment.Center
+            .background(Color.Black)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "Welcome",
-                color = Color.Yellow,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .alpha(alphaWelcome)
-                    .padding(bottom = 16.dp)
-            )
-            
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(
-                    text = "Volunteer",
-                    color = Color.Red,
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-                Text(
-                    text = "News",
-                    color = Color.White,
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-                Text(
-                    text = "24",
-                    color = Color.Red,
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    modifier = Modifier.graphicsLayer {
-                        translationX = offset24
-                        scaleX = scale24
-                        scaleY = scale24
-                        rotationY = rotation24
-                        cameraDistance = 12f * density
-                    }
-                )
-            }
-        }
+        AndroidView(
+            factory = { context ->
+                WebView(context).apply {
+                    settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
+                    settings.cacheMode = WebSettings.LOAD_NO_CACHE
+                    // Ensure transparent background or black to match the HTML body
+                    setBackgroundColor(android.graphics.Color.BLACK)
+                    webViewClient = WebViewClient()
+                    
+                    // Load the highly complex 3D CSS/SVG animated code provided by the user
+                    val encodedHtml = android.util.Base64.encodeToString(
+                        SPLASH_HTML.toByteArray(Charsets.UTF_8), 
+                        android.util.Base64.NO_PADDING
+                    )
+                    loadData(encodedHtml, "text/html", "base64")
+                }
+            },
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }

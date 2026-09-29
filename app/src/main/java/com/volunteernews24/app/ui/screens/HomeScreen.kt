@@ -57,13 +57,22 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Column {
+                        val context = androidx.compose.ui.platform.LocalContext.current
+                        val imageLoader = remember {
+                            coil.ImageLoader.Builder(context)
+                                .components { add(coil.decode.SvgDecoder.Factory()) }
+                                .build()
+                        }
                         AsyncImage(
-                            model = "https://www.volunteernews24.com/wp-content/uploads/2021/04/Volunteer-News-Logo-1.png",
+                            model = R.raw.logo,
+                            imageLoader = imageLoader,
                             contentDescription = "VolunteerNews24 Logo",
                             modifier = Modifier
                                 .height(48.dp)
+                                .fillMaxWidth()
                                 .padding(bottom = 4.dp),
-                            contentScale = ContentScale.Fit
+                            contentScale = ContentScale.Fit,
+                            alignment = Alignment.CenterStart
                         )
                         Text(
                             text = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale("bn", "BD")).format(Date()),
