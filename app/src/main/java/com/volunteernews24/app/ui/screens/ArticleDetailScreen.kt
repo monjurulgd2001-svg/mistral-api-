@@ -9,12 +9,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,23 +26,52 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import coil.compose.AsyncImage
 import com.volunteernews24.app.data.model.Article
+import com.volunteernews24.app.ui.components.ArticleCard
 import com.volunteernews24.app.ui.theme.VNRed
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ArticleDetailScreen(
     articleUrl: String,
     article: Article?,
+    relatedArticles: List<Article> = emptyList(),
     isLoading: Boolean,
     onLoadArticle: (String) -> Unit,
+    onArticleClick: (Article) -> Unit = {},
     onBookmarkClick: (String) -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     
+    var isPlaying by remember { mutableStateOf(false) }
+    val tts = remember {
+        var ttsInstance: TextToSpeech? = null
+        ttsInstance = TextToSpeech(context) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                ttsInstance?.language = Locale("bn", "BD")
+                ttsInstance?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                    override fun onStart(utteranceId: String?) { isPlaying = true }
+                    override fun onDone(utteranceId: String?) { isPlaying = false }
+                    override fun onError(utteranceId: String?) { isPlaying = false }
+                })
+            }
+        }
+        ttsInstance
+    }
+
+    DisposableEffect(tts) {
+        onDispose {
+            tts?.stop()
+            tts?.shutdown()
+        }
+    }
+
     LaunchedEffect(articleUrl) {
         onLoadArticle(articleUrl)
     }
@@ -175,6 +205,26 @@ fun ArticleDetailScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 14.sp
                         )
+                        Spacer(modifier = Modifier.weight(1f))
+                        IconButton(
+                            onClick = {
+                                if (isPlaying) {
+                                    tts?.stop()
+                                    isPlaying = false
+                                } else {
+                                    val params = android.os.Bundle()
+                                    params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "TTS_ID")
+                                    tts?.speak(article.content, TextToSpeech.QUEUE_FLUSH, params, "TTS_ID")
+                                    isPlaying = true
+                                }
+                            }
+                        ) {
+                            Icon(
+                                if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow,
+                                contentDescription = "Play/Stop Audio",
+                                tint = VNRed
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -224,6 +274,26 @@ fun ArticleDetailScreen(
                             contentPadding = PaddingValues(0.dp)
                         ) { 
                             Text("WhatsApp", color = Color.White, fontSize = 12.sp, maxLines = 1) 
+                        }
+                    }
+                    
+                    if (relatedArticles.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(32.dp))
+                        Text(
+                            text = "সম্পর্কিত খবর:", 
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        relatedArticles.forEach { related ->
+                            ArticleCard(
+                                article = related,
+                                onClick = { onArticleClick(related) },
+                                onBookmarkClick = { onBookmarkClick(related.url) }
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
                         }
                     }
                 }

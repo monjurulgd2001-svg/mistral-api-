@@ -245,11 +245,25 @@ fun VNNavGraph(
                 val encodedUrl = backStackEntry.arguments?.getString("url") ?: ""
                 val url = URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8.toString())
                 
+                val currentArticle = uiState.currentArticle
+                val allArticles = (uiState.articles + uiState.categoryArticles).distinctBy { it.url }
+                val related = allArticles.filter { 
+                    it.url != url && currentArticle != null && 
+                    it.category.isNotBlank() && currentArticle.category.isNotBlank() &&
+                    (it.category.contains(currentArticle.category, ignoreCase = true) || 
+                     currentArticle.category.contains(it.category, ignoreCase = true)) 
+                }.take(4)
+                
                 ArticleDetailScreen(
                     articleUrl = url,
-                    article = uiState.currentArticle,
+                    article = currentArticle,
+                    relatedArticles = related,
                     isLoading = uiState.isArticleLoading,
                     onLoadArticle = { viewModel.loadArticleDetail(it) },
+                    onArticleClick = { article ->
+                        val articleEncodedUrl = URLEncoder.encode(article.url, StandardCharsets.UTF_8.toString())
+                        navController.navigate("article_detail/$articleEncodedUrl")
+                    },
                     onBookmarkClick = { articleUrl -> viewModel.toggleBookmark(articleUrl) },
                     onBackClick = { navController.popBackStack() }
                 )
