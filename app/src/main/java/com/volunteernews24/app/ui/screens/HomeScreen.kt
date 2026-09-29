@@ -35,6 +35,9 @@ fun HomeScreen(
     isLoading: Boolean,
     isOffline: Boolean, // Kept for compatibility, though we are online-only now
     articles: List<Article>,
+    currentPage: Int,
+    onNextPage: () -> Unit,
+    onPreviousPage: () -> Unit,
     onRefresh: () -> Unit,
     onArticleClick: (Article) -> Unit,
     onBookmarkClick: (String) -> Unit,
@@ -58,14 +61,14 @@ fun HomeScreen(
                             model = "https://www.volunteernews24.com/wp-content/uploads/2021/04/Volunteer-News-Logo-1.png",
                             contentDescription = "VolunteerNews24 Logo",
                             modifier = Modifier
-                                .height(32.dp)
-                                .padding(bottom = 2.dp),
+                                .height(48.dp)
+                                .padding(bottom = 4.dp),
                             contentScale = ContentScale.Fit
                         )
                         Text(
                             text = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale("bn", "BD")).format(Date()),
                             fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = androidx.compose.ui.graphics.Color.DarkGray
                         )
                     }
                 },
@@ -75,8 +78,8 @@ fun HomeScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                    containerColor = androidx.compose.ui.graphics.Color.White,
+                    titleContentColor = androidx.compose.ui.graphics.Color.Black
                 )
             )
         }
@@ -191,7 +194,7 @@ fun HomeScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(300.dp),
+                                .height(200.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -199,6 +202,17 @@ fun HomeScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
+                    }
+                }
+
+                // 4. Pagination (Always show if not loading so user can go back)
+                if (!isLoading) {
+                    item {
+                        PaginationControls(
+                            currentPage = currentPage,
+                            onPreviousPage = onPreviousPage,
+                            onNextPage = onNextPage
+                        )
                     }
                 }
             }

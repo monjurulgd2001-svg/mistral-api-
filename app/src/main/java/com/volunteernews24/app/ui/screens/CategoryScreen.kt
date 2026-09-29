@@ -22,8 +22,11 @@ fun CategoryScreen(
     categoryName: String,
     categoryUrl: String,
     articles: List<Article>,
+    currentPage: Int,
     isLoading: Boolean,
     onLoadCategory: (String) -> Unit,
+    onNextPage: () -> Unit,
+    onPreviousPage: () -> Unit,
     onArticleClick: (Article) -> Unit,
     onBookmarkClick: (String) -> Unit,
     onBackClick: () -> Unit,
@@ -49,6 +52,7 @@ fun CategoryScreen(
 
         if (isLoading && articles.isEmpty()) {
             LazyColumn(
+                modifier = Modifier.weight(1f),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -56,6 +60,7 @@ fun CategoryScreen(
             }
         } else if (articles.isNotEmpty()) {
             LazyColumn(
+                modifier = Modifier.weight(1f),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -67,10 +72,19 @@ fun CategoryScreen(
                     )
                 }
             }
-        } else {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        } else if (!isLoading) {
+            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Text(text = "কোনো সংবাদ পাওয়া যায়নি", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+        }
+
+        if (!isLoading) {
+            com.volunteernews24.app.ui.components.PaginationControls(
+                currentPage = currentPage,
+                onPreviousPage = onPreviousPage,
+                onNextPage = onNextPage,
+                modifier = Modifier.padding(16.dp)
+            )
         }
     }
 }

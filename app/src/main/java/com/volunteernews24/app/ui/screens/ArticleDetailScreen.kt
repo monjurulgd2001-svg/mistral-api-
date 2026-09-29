@@ -145,21 +145,7 @@ fun ArticleDetailScreen(
                 Column(
                     modifier = Modifier.padding(horizontal = 16.dp)
                 ) {
-                    if (article.category.isNotBlank()) {
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = VNRed,
-                            modifier = Modifier.padding(bottom = 12.dp)
-                        ) {
-                            Text(
-                                text = article.category,
-                                color = Color.White,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                            )
-                        }
-                    }
+
 
                     Text(
                         text = article.title,
@@ -201,8 +187,67 @@ fun ArticleDetailScreen(
                         lineHeight = 28.sp,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Text(
+                        text = "শেয়ার করুন:", 
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Button(
+                            onClick = { shareToApp(context, article, "com.facebook.katana") },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1877F2)),
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(0.dp)
+                        ) { 
+                            Text("Facebook", color = Color.White, fontSize = 12.sp, maxLines = 1) 
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = { shareToApp(context, article, "com.facebook.orca") },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00B2FF)),
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(0.dp)
+                        ) { 
+                            Text("Messenger", color = Color.White, fontSize = 12.sp, maxLines = 1) 
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = { shareToApp(context, article, "com.whatsapp") },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF25D366)),
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(0.dp)
+                        ) { 
+                            Text("WhatsApp", color = Color.White, fontSize = 12.sp, maxLines = 1) 
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+private fun shareToApp(context: android.content.Context, article: Article, packageName: String) {
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, article.title)
+        putExtra(Intent.EXTRA_TEXT, "${article.title}\n\n${article.url}")
+        setPackage(packageName)
+    }
+    try {
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        // Fallback if app is not installed
+        val fallbackIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, article.title)
+            putExtra(Intent.EXTRA_TEXT, "${article.title}\n\n${article.url}")
+        }
+        context.startActivity(Intent.createChooser(fallbackIntent, "শেয়ার করুন"))
     }
 }

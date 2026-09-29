@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">VolunteerNews24</string>
     <string name="home">হোম</string>
-    <string name="categories">বিভাগসমূহ</string>
+    <string name="categories">Category</string>
     <string name="bookmarks">সংরক্ষিত</string>
     <string name="library">লাইব্রেরি</string>
     <string name="search_hint">সংবাদ অনুসন্ধান করুন…</string>

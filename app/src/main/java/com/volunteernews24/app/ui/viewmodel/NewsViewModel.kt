@@ -25,7 +25,9 @@ data class UiState(
     val currentArticle: Article? = null,
     val isArticleLoading: Boolean = false,
     val isOffline: Boolean = false,
-    val bookmarkMessage: String? = null
+    val bookmarkMessage: String? = null,
+    val homePage: Int = 1,
+    val categoryPage: Int = 1
 )
 
 class NewsViewModel(application: Application) : AndroidViewModel(application) {
@@ -51,11 +53,13 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
 
     // ─── Network Fetching (Real-time Online) ────────────────────────
 
-    fun loadHomeArticles() {
+    fun loadHomeArticles(page: Int = 1) {
+        if (page < 1) return
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update { it.copy(isLoading = true, error = null, homePage = page) }
             try {
-                val articles = repository.getHomeArticles()
+                val articles = repository.getHomeArticles(page)
+                // If page > 1 and articles is empty, we might have hit the end, but let's just show it.
                 _uiState.update { it.copy(isLoading = false, isOffline = false, articles = articles) }
             } catch (e: Exception) {
                 _uiState.update {
@@ -68,12 +72,22 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+    
+    fun nextHomePage() {
+        loadHomeArticles(_uiState.value.homePage + 1)
+    }
+    
+    fun previousHomePage() {
+        if (_uiState.value.homePage > 1) {
+            loadHomeArticles(_uiState.value.homePage - 1)
+        }
+    }
 
     fun refreshArticles() {
         viewModelScope.launch {
             _uiState.update { it.copy(isRefreshing = true) }
             try {
-                val articles = repository.getHomeArticles()
+                val articles = repository.getHomeArticles(_uiState.value.homePage)
                 _uiState.update { it.copy(isRefreshing = false, isOffline = false, error = null, articles = articles) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isRefreshing = false, isOffline = true) }
@@ -92,15 +106,26 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun loadCategoryArticles(categoryUrl: String) {
+    fun loadCategoryArticles(categoryUrl: String, page: Int = 1) {
+        if (page < 1) return
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, categoryArticles = emptyList()) }
+            _uiState.update { it.copy(isLoading = true, categoryArticles = emptyList(), categoryPage = page) }
             try {
-                val articles = repository.getCategoryArticles(categoryUrl)
+                val articles = repository.getCategoryArticles(categoryUrl, page)
                 _uiState.update { it.copy(isLoading = false, categoryArticles = articles) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, error = "Failed to load category.") }
             }
+        }
+    }
+
+    fun nextCategoryPage(categoryUrl: String) {
+        loadCategoryArticles(categoryUrl, _uiState.value.categoryPage + 1)
+    }
+
+    fun previousCategoryPage(categoryUrl: String) {
+        if (_uiState.value.categoryPage > 1) {
+            loadCategoryArticles(categoryUrl, _uiState.value.categoryPage - 1)
         }
     }
 

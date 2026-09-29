@@ -19,9 +19,14 @@ import com.volunteernews24.app.ui.viewmodel.NewsViewModel
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
+import com.volunteernews24.app.ui.viewmodel.ThemeViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+
 class MainActivity : ComponentActivity() {
 
     private val viewModel: NewsViewModel by viewModels()
+    private val themeViewModel: ThemeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install splash screen before super.onCreate
@@ -30,7 +35,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         
         setContent {
-            VolunteerNews24Theme {
+            val appThemeColor by themeViewModel.currentTheme.collectAsState()
+            
+            VolunteerNews24Theme(appThemeColor = appThemeColor, dynamicColor = false) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -44,7 +51,8 @@ class MainActivity : ComponentActivity() {
 
                     VNNavGraph(
                         navController = navController,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        themeViewModel = themeViewModel
                     )
                 }
             }

@@ -20,6 +20,16 @@ import androidx.core.view.WindowCompat
 val VNRed = Color(0xFFC62828)
 val VNRedDark = Color(0xFF8E0000)
 val VNRedLight = Color(0xFFFF5F52)
+
+val VNGreen = Color(0xFF2E7D32)
+val VNGreenDark = Color(0xFF005005)
+
+val VNBlue = Color(0xFF1565C0)
+val VNBlueDark = Color(0xFF003C8F)
+
+val VNOrange = Color(0xFFEF6C00)
+val VNOrangeDark = Color(0xFFB53D00)
+
 val VNAmber = Color(0xFFFF6F00)
 val VNAmberLight = Color(0xFFFFA040)
 
@@ -95,15 +105,43 @@ val BottomBarCornerRadius = 24.dp
 fun VolunteerNews24Theme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
+    appThemeColor: com.volunteernews24.app.data.repository.AppThemeColor = com.volunteernews24.app.data.repository.AppThemeColor.RED,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
+    
+    // Choose primary colors based on user selection
+    val primaryColor = when (appThemeColor) {
+        com.volunteernews24.app.data.repository.AppThemeColor.RED -> VNRed
+        com.volunteernews24.app.data.repository.AppThemeColor.GREEN -> VNGreen
+        com.volunteernews24.app.data.repository.AppThemeColor.BLUE -> VNBlue
+        com.volunteernews24.app.data.repository.AppThemeColor.ORANGE -> VNOrange
+    }
+    
+    val primaryContainerColor = when (appThemeColor) {
+        com.volunteernews24.app.data.repository.AppThemeColor.RED -> VNRedDark
+        com.volunteernews24.app.data.repository.AppThemeColor.GREEN -> VNGreenDark
+        com.volunteernews24.app.data.repository.AppThemeColor.BLUE -> VNBlueDark
+        com.volunteernews24.app.data.repository.AppThemeColor.ORANGE -> VNOrangeDark
+    }
+
+    // Generate custom scheme based on selected primary color
+    val customDarkScheme = DarkColorScheme.copy(
+        primary = primaryColor,
+        primaryContainer = primaryContainerColor
+    )
+    
+    val customLightScheme = LightColorScheme.copy(
+        primary = primaryColor,
+        onPrimaryContainer = primaryContainerColor
+    )
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        darkTheme -> customDarkScheme
+        else -> customLightScheme
     }
     
     val view = LocalView.current

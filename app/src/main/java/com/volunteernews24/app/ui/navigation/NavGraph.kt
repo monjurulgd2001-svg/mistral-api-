@@ -38,6 +38,7 @@ sealed class Screen(
     val iconSelected: ImageVector,
     val iconUnselected: ImageVector
 ) {
+    object Splash : Screen("splash", R.string.app_name, Icons.Filled.Home, Icons.Outlined.Home) // app_name or any valid string resource
     object Home : Screen("home", R.string.home, Icons.Filled.Home, Icons.Outlined.Home)
     object Categories : Screen("categories", R.string.categories, Icons.Filled.Category, Icons.Outlined.Category)
     object Bookmarks : Screen("bookmarks", R.string.bookmarks, Icons.Filled.Bookmark, Icons.Outlined.BookmarkBorder)
@@ -54,7 +55,8 @@ val bottomNavScreens = listOf(
 @Composable
 fun VNNavGraph(
     navController: NavHostController,
-    viewModel: NewsViewModel
+    viewModel: NewsViewModel,
+    themeViewModel: com.volunteernews24.app.ui.viewmodel.ThemeViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -113,14 +115,27 @@ fun VNNavGraph(
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route,
+            startDestination = Screen.Splash.route,
             modifier = Modifier.padding(paddingValues)
         ) {
+            composable(Screen.Splash.route) {
+                AnimatedSplashScreen(
+                    onSplashFinished = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Splash.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
+            
             composable(Screen.Home.route) {
                 HomeScreen(
                     isLoading = uiState.isLoading,
                     isOffline = uiState.isOffline,
                     articles = uiState.articles,
+                    currentPage = uiState.homePage,
+                    onNextPage = { viewModel.nextHomePage() },
+                    onPreviousPage = { viewModel.previousHomePage() },
                     onRefresh = { viewModel.refreshArticles() },
                     onArticleClick = { article ->
                         val encodedUrl = URLEncoder.encode(article.url, StandardCharsets.UTF_8.toString())
@@ -177,8 +192,11 @@ fun VNNavGraph(
                     categoryName = name,
                     categoryUrl = url,
                     articles = uiState.categoryArticles,
+                    currentPage = uiState.categoryPage,
                     isLoading = uiState.isLoading,
                     onLoadCategory = { viewModel.loadCategoryArticles(it) },
+                    onNextPage = { viewModel.nextCategoryPage(url) },
+                    onPreviousPage = { viewModel.previousCategoryPage(url) },
                     onArticleClick = { article ->
                         val articleEncodedUrl = URLEncoder.encode(article.url, StandardCharsets.UTF_8.toString())
                         navController.navigate("article_detail/$articleEncodedUrl")
@@ -208,7 +226,10 @@ fun VNNavGraph(
             }
             
             composable("about") {
+                val currentTheme by themeViewModel.currentTheme.collectAsState()
                 AboutScreen(
+                    currentTheme = currentTheme,
+                    onThemeChange = { themeViewModel.setTheme(it) },
                     onBackClick = { navController.popBackStack() }
                 )
             }

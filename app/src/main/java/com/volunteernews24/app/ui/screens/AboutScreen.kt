@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -11,20 +13,25 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.volunteernews24.app.ui.theme.VNRed
+import com.volunteernews24.app.data.repository.AppThemeColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
+    currentTheme: AppThemeColor,
+    onThemeChange: (AppThemeColor) -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -139,6 +146,74 @@ fun AboutScreen(
                     )
                 }
             }
+            
+            // Theme Section
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "অ্যাপের থিম নির্ধারণ করুন",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        ThemeColorButton(
+                            color = Color(0xFFC62828), // Red
+                            isSelected = currentTheme == AppThemeColor.RED,
+                            onClick = { onThemeChange(AppThemeColor.RED) }
+                        )
+                        ThemeColorButton(
+                            color = Color(0xFF2E7D32), // Green
+                            isSelected = currentTheme == AppThemeColor.GREEN,
+                            onClick = { onThemeChange(AppThemeColor.GREEN) }
+                        )
+                        ThemeColorButton(
+                            color = Color(0xFF1565C0), // Blue
+                            isSelected = currentTheme == AppThemeColor.BLUE,
+                            onClick = { onThemeChange(AppThemeColor.BLUE) }
+                        )
+                        ThemeColorButton(
+                            color = Color(0xFFEF6C00), // Orange
+                            isSelected = currentTheme == AppThemeColor.ORANGE,
+                            onClick = { onThemeChange(AppThemeColor.ORANGE) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ThemeColorButton(
+    color: Color,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .size(48.dp)
+            .background(color = color, shape = CircleShape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        if (isSelected) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = "Selected",
+                tint = Color.White
+            )
         }
     }
 }
