@@ -54,20 +54,14 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Row(verticalAlignment = Alignment.Bottom) {
-                            Text(
-                                text = "volunteer",
-                                fontWeight = FontWeight.ExtraBold,
-                                color = VNRed,
-                                fontSize = 24.sp
-                            )
-                            Text(
-                                text = "news24.com",
-                                fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 24.sp
-                            )
-                        }
+                        AsyncImage(
+                            model = "https://www.volunteernews24.com/wp-content/uploads/2021/04/Volunteer-News-Logo-1.png",
+                            contentDescription = "VolunteerNews24 Logo",
+                            modifier = Modifier
+                                .height(32.dp)
+                                .padding(bottom = 2.dp),
+                            contentScale = ContentScale.Fit
+                        )
                         Text(
                             text = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale("bn", "BD")).format(Date()),
                             fontSize = 12.sp,
@@ -116,10 +110,23 @@ fun HomeScreen(
                     }
                 } else if (articles.isNotEmpty()) {
                     
-                    // Split articles into Latest, Popular, and Running for sections
-                    val latestNews = articles.take(5)
-                    val popularNews = articles.drop(5).take(5)
-                    val runningNews = articles.drop(10)
+                    // Split articles into Featured, Latest, Popular, and Running
+                    val featuredArticle = articles.firstOrNull { it.imageUrl.isNotBlank() }
+                    val remainingArticles = if (featuredArticle != null) articles.filter { it.url != featuredArticle.url } else articles
+
+                    val latestNews = remainingArticles.take(5)
+                    val popularNews = remainingArticles.drop(5).take(5)
+                    val runningNews = remainingArticles.drop(10)
+
+                    // 0. Featured News Section
+                    if (featuredArticle != null) {
+                        item {
+                            FeaturedArticleCard(
+                                article = featuredArticle,
+                                onClick = { onArticleClick(featuredArticle) }
+                            )
+                        }
+                    }
 
                     // 1. Running News (Scrolling Marquee for Headlines)
                         if (runningNews.isNotEmpty()) {
