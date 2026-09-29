@@ -3,6 +3,7 @@ package com.volunteernews24.app.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -53,12 +54,20 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text(
-                            text = "VolunteerNews24",
-                            fontWeight = FontWeight.Bold,
-                            color = VNRed,
-                            fontSize = 20.sp
-                        )
+                        Row(verticalAlignment = Alignment.Bottom) {
+                            Text(
+                                text = "volunteer",
+                                fontWeight = FontWeight.ExtraBold,
+                                color = VNRed,
+                                fontSize = 24.sp
+                            )
+                            Text(
+                                text = "news24.com",
+                                fontWeight = FontWeight.ExtraBold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 24.sp
+                            )
+                        }
                         Text(
                             text = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale("bn", "BD")).format(Date()),
                             fontSize = 12.sp,
@@ -112,25 +121,33 @@ fun HomeScreen(
                     val popularNews = articles.drop(5).take(5)
                     val runningNews = articles.drop(10)
 
-                    // 1. Running News (Scrolling Row)
-                    if (runningNews.isNotEmpty()) {
-                        item {
-                            SectionHeader(title = "চলমান সংবাদ")
-                        }
-                        item {
-                            LazyRow(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                contentPadding = PaddingValues(vertical = 4.dp)
-                            ) {
-                                items(runningNews.take(5)) { article ->
-                                    CompactArticleCard(
-                                        article = article,
-                                        onClick = { onArticleClick(article) }
+                    // 1. Running News (Scrolling Marquee for Headlines)
+                        if (runningNews.isNotEmpty()) {
+                            item {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(MaterialTheme.colorScheme.surfaceVariant, shape = MaterialTheme.shapes.small)
+                                        .padding(8.dp)
+                                ) {
+                                    Text(
+                                        text = "শিরোনাম:",
+                                        fontWeight = FontWeight.Bold,
+                                        color = VNRed,
+                                        modifier = Modifier.padding(end = 8.dp)
+                                    )
+                                    Text(
+                                        text = runningNews.joinToString(" • ") { it.title },
+                                        modifier = Modifier.basicMarquee(
+                                            iterations = Int.MAX_VALUE,
+                                            velocity = 30.dp
+                                        ),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
                         }
-                    }
 
                     // 2. Latest News
                     if (latestNews.isNotEmpty()) {

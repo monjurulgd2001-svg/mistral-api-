@@ -87,15 +87,15 @@ fun AboutScreen(
                     InfoRow(
                         icon = Icons.Default.Person,
                         title = "চেয়ারম্যান",
-                        value = "Md. Chairman Name" // Replace with actual name if provided
+                        value = "এম. রশিদ আলী"
                     )
                     
                     Spacer(modifier = Modifier.height(8.dp))
                     
                     InfoRow(
                         icon = Icons.Default.Person,
-                        title = "ম্যানেজিং এডিটর",
-                        value = "Md. Editor Name" // Replace with actual name if provided
+                        title = "নির্বাহী সম্পাদক",
+                        value = "সিরাজুম মুনিরা"
                     )
                 }
             }
@@ -118,24 +118,24 @@ fun AboutScreen(
                     
                     InfoRow(
                         icon = Icons.Default.LocationOn,
-                        title = "ঠিকানা",
-                        value = "Dhaka, Bangladesh" // Replace with actual address
+                        title = "বার্তা ও বাণিজ্যিক কার্যালয়",
+                        value = "জেলা পরিষদ সুপার মার্কেট, ৩য় তলা, রুম-৩১৭, কুড়িগ্রাম।"
                     )
                     
                     Spacer(modifier = Modifier.height(8.dp))
                     
                     InfoRow(
                         icon = Icons.Default.Phone,
-                        title = "ফোন",
-                        value = "+880 1234 567890" // Replace with actual phone
+                        title = "মোবাইল",
+                        value = "01723438687"
                     )
                     
                     Spacer(modifier = Modifier.height(8.dp))
                     
                     InfoRow(
                         icon = Icons.Default.Email,
-                        title = "ইমেইল",
-                        value = "info@volunteernews24.com"
+                        title = "ই-মেইল",
+                        value = "volunteernews642@gmail.com"
                     )
                 }
             }
