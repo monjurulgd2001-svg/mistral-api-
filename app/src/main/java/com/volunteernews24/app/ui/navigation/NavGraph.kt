@@ -137,7 +137,7 @@ fun VNNavGraph(
             }
             
             composable(Screen.Home.route) {
-                var searchQuery by androidx.compose.runtime.rememberSaveable { androidx.compose.runtime.mutableStateOf("") }
+                var searchQuery by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
 
                 HomeScreen(
                     isLoading = uiState.isLoading,
