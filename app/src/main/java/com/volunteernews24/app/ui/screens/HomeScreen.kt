@@ -243,77 +243,11 @@ fun HomeScreen(
 
                         // 0. Featured News Slider
                         if (featuredArticles.isNotEmpty()) {
-                            // pagerState MUST be outside item{} so it survives recomposition
-                            val pagerState = androidx.compose.foundation.pager.rememberPagerState(
-                                pageCount = { featuredArticles.size }
-                            )
-
-                            // Auto-cycle: runs once, re-triggers only when articles list changes
-                            LaunchedEffect(featuredArticles.size) {
-                                while (true) {
-                                    kotlinx.coroutines.delay(3500)
-                                    if (featuredArticles.size > 1) {
-                                        val next = (pagerState.currentPage + 1) % featuredArticles.size
-                                        try {
-                                            pagerState.animateScrollToPage(
-                                                next,
-                                                animationSpec = androidx.compose.animation.core.tween(
-                                                    durationMillis = 600,
-                                                    easing = androidx.compose.animation.core.FastOutSlowInEasing
-                                                )
-                                            )
-                                        } catch (_: Exception) {
-                                            // Interrupted by user swipe — just continue loop
-                                        }
-                                    }
-                                }
-                            }
-
                             item(key = "featured_slider") {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    androidx.compose.foundation.pager.HorizontalPager(
-                                        state = pagerState,
-                                        modifier = Modifier.fillMaxWidth().height(230.dp),
-                                        pageSpacing = 8.dp,
-                                        beyondViewportPageCount = 1
-                                    ) { page ->
-                                        val article = featuredArticles[page]
-                                        FeaturedArticleCard(
-                                            article = article,
-                                            onClick = { onArticleClick(article) }
-                                        )
-                                    }
-
-                                    // Pager indicators — animated dots
-                                    Row(
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .padding(top = 8.dp),
-                                        horizontalArrangement = Arrangement.Center,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        repeat(featuredArticles.size) { iteration ->
-                                            val isSelected = pagerState.currentPage == iteration
-                                            val dotWidth by androidx.compose.animation.core.animateDpAsState(
-                                                targetValue = if (isSelected) 20.dp else 6.dp,
-                                                animationSpec = androidx.compose.animation.core.tween(300),
-                                                label = "dotWidth"
-                                            )
-                                            val dotColor = if (isSelected) VNRed
-                                                else androidx.compose.ui.graphics.Color.LightGray
-                                            Box(
-                                                modifier = Modifier
-                                                    .padding(horizontal = 3.dp, vertical = 4.dp)
-                                                    .height(6.dp)
-                                                    .width(dotWidth)
-                                                    .background(
-                                                        dotColor,
-                                                        androidx.compose.foundation.shape.RoundedCornerShape(3.dp)
-                                                    )
-                                            )
-                                        }
-                                    }
-                                }
+                                FeaturedNewsSlider(
+                                    articles = featuredArticles,
+                                    onArticleClick = onArticleClick
+                                )
                             }
                         }
 
@@ -418,6 +352,87 @@ fun HomeScreen(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Self-contained featured news slider composable.
+ * Keeping rememberPagerState and LaunchedEffect here (valid @Composable context)
+ * avoids the "@Composable invocations can only happen from @Composable function" error
+ * that occurs when they are placed directly inside a LazyListScope lambda.
+ */
+@Composable
+fun FeaturedNewsSlider(
+    articles: List<com.volunteernews24.app.data.model.Article>,
+    onArticleClick: (com.volunteernews24.app.data.model.Article) -> Unit
+) {
+    val pagerState = androidx.compose.foundation.pager.rememberPagerState(
+        pageCount = { articles.size }
+    )
+
+    // Infinite auto-cycle loop — restarts only when article count changes
+    LaunchedEffect(articles.size) {
+        while (true) {
+            kotlinx.coroutines.delay(3500)
+            if (articles.size > 1) {
+                val next = (pagerState.currentPage + 1) % articles.size
+                try {
+                    pagerState.animateScrollToPage(
+                        next,
+                        animationSpec = androidx.compose.animation.core.tween(
+                            durationMillis = 600,
+                            easing = androidx.compose.animation.core.FastOutSlowInEasing
+                        )
+                    )
+                } catch (_: Exception) {
+                    // User swiped mid-animation — continue loop
+                }
+            }
+        }
+    }
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        androidx.compose.foundation.pager.HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth().height(230.dp),
+            pageSpacing = 8.dp,
+            beyondViewportPageCount = 1
+        ) { page ->
+            val article = articles[page]
+            com.volunteernews24.app.ui.components.FeaturedArticleCard(
+                article = article,
+                onClick = { onArticleClick(article) }
+            )
+        }
+
+        // Animated pill indicators
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            repeat(articles.size) { iteration ->
+                val isSelected = pagerState.currentPage == iteration
+                val dotWidth by androidx.compose.animation.core.animateDpAsState(
+                    targetValue = if (isSelected) 20.dp else 6.dp,
+                    animationSpec = androidx.compose.animation.core.tween(300),
+                    label = "dotWidth_$iteration"
+                )
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 3.dp, vertical = 4.dp)
+                        .height(6.dp)
+                        .width(dotWidth)
+                        .background(
+                            if (isSelected) com.volunteernews24.app.ui.theme.VNRed
+                            else androidx.compose.ui.graphics.Color.LightGray,
+                            androidx.compose.foundation.shape.RoundedCornerShape(3.dp)
+                        )
+                )
             }
         }
     }
