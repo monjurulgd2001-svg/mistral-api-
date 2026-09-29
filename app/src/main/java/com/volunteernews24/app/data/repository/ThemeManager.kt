@@ -31,11 +31,11 @@ class ThemeManager(private val context: Context) {
     }
 
     val themeModeFlow: Flow<AppThemeMode> = context.themeDataStore.data.map { preferences ->
-        val modeName = preferences[MODE_KEY] ?: AppThemeMode.SYSTEM.name
+        val modeName = preferences[MODE_KEY] ?: AppThemeMode.LIGHT.name
         try {
             AppThemeMode.valueOf(modeName)
         } catch (e: Exception) {
-            AppThemeMode.SYSTEM
+            AppThemeMode.LIGHT
         }
     }
 

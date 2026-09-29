@@ -23,7 +23,7 @@ class ThemeViewModel(application: Application) : AndroidViewModel(application) {
     val currentMode: StateFlow<AppThemeMode> = themeManager.themeModeFlow.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = AppThemeMode.SYSTEM
+        initialValue = AppThemeMode.LIGHT
     )
 
     fun setTheme(color: AppThemeColor) {

@@ -123,7 +123,7 @@ fun HomeScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     AsyncImage(
-                        model = R.raw.logo,
+                        model = R.raw.new_logo,
                         imageLoader = imageLoader,
                         contentDescription = "VolunteerNews24 Logo",
                         modifier = Modifier
@@ -241,7 +241,25 @@ fun HomeScreen(
                         val popularNews = remainingArticles.drop(5).take(5)
                         val runningNews = remainingArticles.drop(10)
 
-                        // 0. Featured News Slider
+                        // 0. Breaking News Stories (Instagram Style)
+                        val storyArticles = articles.filter { it.imageUrl.isNotBlank() }.take(8)
+                        if (storyArticles.isNotEmpty()) {
+                            item(key = "stories_row") {
+                                LazyRow(
+                                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    items(storyArticles) { article ->
+                                        StoryAvatar(
+                                            article = article,
+                                            onClick = { onArticleClick(article) }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // 1. Featured News Slider
                         if (featuredArticles.isNotEmpty()) {
                             item(key = "featured_slider") {
                                 FeaturedNewsSlider(

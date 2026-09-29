@@ -413,3 +413,63 @@ fun OfflineBanner(modifier: Modifier = Modifier) {
         }
     }
 }
+
+/**
+ * Avatar for a news story, looks like Instagram story
+ */
+@Composable
+fun StoryAvatar(
+    article: Article,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .width(76.dp)
+            .clickable(onClick = onClick),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Gradient Border Box
+        Box(
+            modifier = Modifier
+                .size(68.dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(VNRed, Color(0xFFFF9800), VNRed)
+                    )
+                )
+                .padding(2.5.dp) // border thickness
+        ) {
+            // Inner Box with surface background to create gap between image and border
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(2.dp) // inner spacing
+            ) {
+                AsyncImage(
+                    model = article.imageUrl,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        Text(
+            text = article.title,
+            fontSize = 11.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(horizontal = 2.dp)
+        )
+    }
+}
