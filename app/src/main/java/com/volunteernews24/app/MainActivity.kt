@@ -2,6 +2,7 @@ package com.volunteernews24.app
 
 import android.content.Intent
 import android.os.Bundle
+import android.annotation.SuppressLint
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -33,6 +34,7 @@ class MainActivity : ComponentActivity() {
     private val viewModel: NewsViewModel by viewModels()
     private val themeViewModel: ThemeViewModel by viewModels()
 
+    @SuppressLint("InvalidFragmentVersionForActivityResult")
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
