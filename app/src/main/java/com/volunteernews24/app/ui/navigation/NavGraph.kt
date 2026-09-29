@@ -54,9 +54,9 @@ sealed class Screen(
 
 val bottomNavScreens = listOf(
     Screen.Home,
-    Screen.Inbox,
     Screen.Bookmarks,
-    Screen.Library
+    Screen.Library,
+    Screen.About
 )
 
 @Composable
@@ -165,7 +165,8 @@ fun VNNavGraph(
                         val encodedName = URLEncoder.encode(category.name, StandardCharsets.UTF_8.toString())
                         navController.navigate("category/$encodedName/$encodedUrl")
                     },
-                    onAboutClick = { navController.navigate("about") }
+                    onAboutClick = { navController.navigate("about") },
+                    onInboxClick = { navController.navigate(Screen.Inbox.route) }
                 )
             }
             

@@ -52,6 +52,7 @@ fun HomeScreen(
     onCategoryClick: (com.volunteernews24.app.data.model.Category) -> Unit,
     onBookmarkClick: (String) -> Unit,
     onAboutClick: () -> Unit,
+    onInboxClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var backPressedTime by remember { mutableLongStateOf(0L) }
@@ -89,14 +90,23 @@ fun HomeScreen(
                     
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         if (weatherInfo != null) {
-                            Text(
-                                text = "${weatherInfo.city} | ${weatherInfo.temperatureCelsius}°C ☁️",
-                                fontSize = 11.sp,
-                                color = androidx.compose.ui.graphics.Color.LightGray
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "${weatherInfo.city} | ${weatherInfo.temperatureCelsius}°C",
+                                    fontSize = 11.sp,
+                                    color = androidx.compose.ui.graphics.Color.LightGray
+                                )
+                                if (weatherInfo.iconUrl.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    AsyncImage(
+                                        model = weatherInfo.iconUrl,
+                                        contentDescription = "Weather Icon",
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
                             Spacer(modifier = Modifier.width(8.dp))
-                        }
-                        
+                        }                        
                         IconButton(
                             onClick = onAboutClick,
                             modifier = Modifier.size(24.dp)
@@ -155,21 +165,35 @@ fun HomeScreen(
                     Column(
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        OutlinedTextField(
-                            value = searchQuery,
-                            onValueChange = onSearchQueryChange,
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            placeholder = { Text(stringResource(R.string.search_hint)) },
-                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-                            shape = androidx.compose.foundation.shape.RoundedCornerShape(30.dp),
-                            singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedTextField(
+                                value = searchQuery,
+                                onValueChange = onSearchQueryChange,
+                                modifier = Modifier.weight(1f),
+                                placeholder = { Text(stringResource(R.string.search_hint)) },
+                                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(30.dp),
+                                singleLine = true,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent
+                                )
                             )
-                        )
+                            
+                            Spacer(modifier = Modifier.width(8.dp))
+                            
+                            IconButton(
+                                onClick = onInboxClick,
+                                modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant, shape = androidx.compose.foundation.shape.CircleShape)
+                            ) {
+                                Icon(androidx.compose.material.icons.Icons.Filled.Inbox, contentDescription = "Inbox", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
                         
                         Spacer(modifier = Modifier.height(12.dp))
                         

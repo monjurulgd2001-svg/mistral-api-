@@ -8,7 +8,8 @@ import java.net.URL
 
 data class WeatherInfo(
     val city: String,
-    val temperatureCelsius: Double
+    val temperatureCelsius: Double,
+    val iconUrl: String
 )
 
 object WeatherManager {
@@ -44,8 +45,9 @@ object WeatherManager {
                 e.printStackTrace()
             }
 
-            // 2. Get Weather (Open-Meteo)
-            val weatherUrl = URL("https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current_weather=true")
+            // 2. Get Weather (OpenWeatherMap)
+            val apiKey = "5a4ea810c2f0e628119f7e37d3b4541e"
+            val weatherUrl = URL("https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=$apiKey&units=metric")
             val weatherConn = weatherUrl.openConnection() as HttpURLConnection
             weatherConn.setRequestProperty("User-Agent", "Mozilla/5.0 (Android) VolunteerNews24App")
             weatherConn.connectTimeout = 3000
@@ -53,12 +55,22 @@ object WeatherManager {
             
             val weatherResponse = weatherConn.inputStream.bufferedReader().readText()
             val weatherJson = JSONObject(weatherResponse)
-            val current = weatherJson.optJSONObject("current_weather")
-            val temperature = current?.optDouble("temperature", Double.NaN)
+            val main = weatherJson.optJSONObject("main")
+            val temperature = main?.optDouble("temp", Double.NaN)
             
-            if (temperature == null || temperature.isNaN()) return@withContext null
+            val weatherArray = weatherJson.optJSONArray("weather")
+            val iconCode = if (weatherArray != null && weatherArray.length() > 0) {
+                weatherArray.getJSONObject(0).optString("icon", "")
+            } else {
+                ""
+            }
+            
+            val iconUrl = if (iconCode.isNotEmpty()) "https://openweathermap.org/img/wn/$iconCode@2x.png" else ""
 
-            WeatherInfo(city, temperature)
+            if (temperature == null || temperature.isNaN()) return@withContext null
+            val roundedTemp = Math.round(temperature * 10.0) / 10.0
+
+            WeatherInfo(city, roundedTemp, iconUrl)
         } catch (e: Exception) {
             e.printStackTrace()
             null
