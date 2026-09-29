@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
@@ -191,7 +192,7 @@ fun HomeScreen(
                                 onClick = onInboxClick,
                                 modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant, shape = androidx.compose.foundation.shape.CircleShape)
                             ) {
-                                Icon(androidx.compose.material.icons.Icons.Filled.Inbox, contentDescription = "Inbox", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Icon(Icons.Filled.Inbox, contentDescription = "Inbox", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                         

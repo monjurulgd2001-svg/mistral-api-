@@ -144,28 +144,20 @@ fun ArticleDetailScreen(
                     .padding(bottom = 32.dp)
             ) {
                 if (article.imageUrl.isNotBlank()) {
-                    Box(modifier = Modifier.fillMaxWidth()) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                    ) {
                         AsyncImage(
                             model = article.imageUrl,
                             contentDescription = article.title,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(300.dp),
+                                .height(250.dp),
                             contentScale = ContentScale.Crop
-                        )
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(150.dp)
-                                .align(Alignment.BottomCenter)
-                                .background(
-                                    Brush.verticalGradient(
-                                        colors = listOf(
-                                            Color.Transparent,
-                                            MaterialTheme.colorScheme.background
-                                        )
-                                    )
-                                )
                         )
                     }
                 } else {
