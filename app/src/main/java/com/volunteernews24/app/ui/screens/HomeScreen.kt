@@ -127,8 +127,8 @@ fun HomeScreen(
                         imageLoader = imageLoader,
                         contentDescription = "VolunteerNews24 Logo",
                         modifier = Modifier
-                            .fillMaxWidth(0.65f)
-                            .height(65.dp),
+                            .fillMaxWidth(0.85f) // Increased from 0.65f
+                            .height(90.dp), // Increased from 65.dp
                         contentScale = ContentScale.Fit
                     )
                 }
