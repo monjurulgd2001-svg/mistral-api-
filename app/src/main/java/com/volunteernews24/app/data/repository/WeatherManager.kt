@@ -8,6 +8,7 @@ import java.net.URL
 
 data class WeatherInfo(
     val city: String,
+    val temperatureCelsius: Double
 )
 
 object WeatherManager {
