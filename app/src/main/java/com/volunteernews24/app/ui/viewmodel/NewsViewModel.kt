@@ -85,11 +85,18 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
     fun loadHomeArticles(page: Int = 1) {
         if (page < 1) return
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null, homePage = page, articles = emptyList()) }
+            if (page == 1) {
+                _uiState.update { it.copy(isLoading = true, error = null, homePage = page, articles = emptyList()) }
+            } else {
+                _uiState.update { it.copy(isLoading = true, error = null, homePage = page) }
+            }
             try {
-                val articles = repository.getHomeArticles(page)
-                // If page > 1 and articles is empty, we might have hit the end, but let's just show it.
-                _uiState.update { it.copy(isLoading = false, isOffline = false, articles = articles) }
+                val newArticles = repository.getHomeArticles(page)
+                _uiState.update { 
+                    val currentArticles = if (page == 1) emptyList() else it.articles
+                    val combinedArticles = (currentArticles + newArticles).distinctBy { it.url }
+                    it.copy(isLoading = false, isOffline = false, articles = combinedArticles)
+                }
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(
@@ -138,10 +145,18 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
     fun loadCategoryArticles(categoryUrl: String, page: Int = 1) {
         if (page < 1) return
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, categoryArticles = emptyList(), categoryPage = page) }
+            if (page == 1) {
+                _uiState.update { it.copy(isLoading = true, categoryArticles = emptyList(), categoryPage = page) }
+            } else {
+                _uiState.update { it.copy(isLoading = true, categoryPage = page) }
+            }
             try {
-                val articles = repository.getCategoryArticles(categoryUrl, page)
-                _uiState.update { it.copy(isLoading = false, categoryArticles = articles) }
+                val newArticles = repository.getCategoryArticles(categoryUrl, page)
+                _uiState.update { 
+                    val currentArticles = if (page == 1) emptyList() else it.categoryArticles
+                    val combinedArticles = (currentArticles + newArticles).distinctBy { it.url }
+                    it.copy(isLoading = false, categoryArticles = combinedArticles)
+                }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, error = "Failed to load category.") }
             }

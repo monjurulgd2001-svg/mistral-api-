@@ -54,11 +54,9 @@ sealed class Screen(
 
 val bottomNavScreens = listOf(
     Screen.Home,
-    Screen.Categories,
     Screen.Inbox,
     Screen.Bookmarks,
-    Screen.Library,
-    Screen.About
+    Screen.Library
 )
 
 @Composable

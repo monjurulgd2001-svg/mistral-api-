@@ -94,12 +94,27 @@ fun HomeScreen(
                         color = androidx.compose.ui.graphics.Color.LightGray
                     )
                     
-                    if (weatherInfo != null) {
-                        Text(
-                            text = "${weatherInfo.city} | ${weatherInfo.temperatureCelsius}°C ☁️",
-                            fontSize = 11.sp,
-                            color = androidx.compose.ui.graphics.Color.LightGray
-                        )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (weatherInfo != null) {
+                            Text(
+                                text = "${weatherInfo.city} | ${weatherInfo.temperatureCelsius}°C ☁️",
+                                fontSize = 11.sp,
+                                color = androidx.compose.ui.graphics.Color.LightGray
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+                        
+                        IconButton(
+                            onClick = onAboutClick,
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.Info,
+                                contentDescription = "About",
+                                tint = androidx.compose.ui.graphics.Color.LightGray,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
                 }
 

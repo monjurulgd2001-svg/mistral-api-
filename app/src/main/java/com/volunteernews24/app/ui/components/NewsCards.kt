@@ -184,7 +184,7 @@ fun ArticleCard(
                     text = article.title,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    maxLines = 3,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     lineHeight = 20.sp
                 )
@@ -208,6 +208,20 @@ fun ArticleCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 11.sp,
                             modifier = Modifier.weight(1f)
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+
+                    IconButton(
+                        onClick = { /* Play action placeholder */ },
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.PlayCircleOutline,
+                            contentDescription = "Play",
+                            tint = VNRed,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
 

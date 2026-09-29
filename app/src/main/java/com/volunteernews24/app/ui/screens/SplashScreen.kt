@@ -19,6 +19,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import androidx.compose.ui.text.googlefonts.GoogleFont
+import androidx.compose.ui.text.googlefonts.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import com.volunteernews24.app.R
+
+val provider = GoogleFont.Provider(
+    providerAuthority = "com.google.android.gms.fonts",
+    providerPackage = "com.google.android.gms",
+    certificates = R.array.com_google_android_gms_fonts_certs
+)
+
+val robotoCondensedBlackItalic = FontFamily(
+    Font(
+        googleFont = GoogleFont("Roboto Condensed"),
+        fontProvider = provider,
+        weight = FontWeight.Black,
+        style = FontStyle.Italic
+    )
+)
 
 @Composable
 fun AnimatedSplashScreen(
@@ -230,6 +250,7 @@ fun AnimatedSplashScreen(
             color = Color(0xFFFF6969), // Red
             fontSize = 78.sp,
             fontWeight = FontWeight.ExtraBold,
+            fontFamily = robotoCondensedBlackItalic,
             style = androidx.compose.ui.text.TextStyle(
                 shadow = Shadow(color = Color.Black, offset = Offset(0f, 6f), blurRadius = 4f)
             ),
@@ -252,6 +273,7 @@ fun AnimatedSplashScreen(
             color = Color(0xFFFF1515), // Red
             fontSize = 58.sp,
             fontWeight = FontWeight.ExtraBold,
+            fontFamily = robotoCondensedBlackItalic,
             style = androidx.compose.ui.text.TextStyle(
                 shadow = Shadow(color = Color(0xFF720000), offset = Offset(5f, 5f), blurRadius = 0f)
             ),
@@ -273,6 +295,7 @@ fun AnimatedSplashScreen(
             color = Color.White, // White
             fontSize = 68.sp,
             fontWeight = FontWeight.ExtraBold,
+            fontFamily = robotoCondensedBlackItalic,
             style = androidx.compose.ui.text.TextStyle(
                 shadow = Shadow(color = Color(0xFF555555), offset = Offset(5f, 5f), blurRadius = 0f)
             ),
@@ -292,6 +315,7 @@ fun AnimatedSplashScreen(
             color = Color(0xFFFFD500), // Yellow/Gold
             fontSize = 58.sp,
             fontWeight = FontWeight.ExtraBold,
+            fontFamily = robotoCondensedBlackItalic,
             style = androidx.compose.ui.text.TextStyle(
                 shadow = Shadow(color = Color(0xFF996200), offset = Offset(5f, 5f), blurRadius = 0f)
             ),

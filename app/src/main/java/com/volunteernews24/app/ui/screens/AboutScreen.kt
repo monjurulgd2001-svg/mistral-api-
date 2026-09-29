@@ -158,116 +158,29 @@ fun AboutScreen(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        text = "অ্যাপের থিম নির্ধারণ করুন",
+                        text = "ডার্ক মোড",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(bottom = 12.dp)
+                        color = MaterialTheme.colorScheme.primary
                     )
-                    
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        ThemeModeButton(
-                            text = "সিস্টেম",
-                            isSelected = currentMode == AppThemeMode.SYSTEM,
-                            onClick = { onModeChange(AppThemeMode.SYSTEM) }
-                        )
-                        ThemeModeButton(
-                            text = "লাইট",
-                            isSelected = currentMode == AppThemeMode.LIGHT,
-                            onClick = { onModeChange(AppThemeMode.LIGHT) }
-                        )
-                        ThemeModeButton(
-                            text = "ডার্ক",
-                            isSelected = currentMode == AppThemeMode.DARK,
-                            onClick = { onModeChange(AppThemeMode.DARK) }
-                        )
-                    }
-
-                    Text(
-                        text = "অ্যাপের কালার নির্ধারণ করুন",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(bottom = 12.dp)
+                    Switch(
+                        checked = currentMode == AppThemeMode.DARK,
+                        onCheckedChange = { isChecked ->
+                            onModeChange(if (isChecked) AppThemeMode.DARK else AppThemeMode.LIGHT)
+                        }
                     )
-                    
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        ThemeColorButton(
-                            color = Color(0xFFC62828), // Red
-                            isSelected = currentTheme == AppThemeColor.RED,
-                            onClick = { onThemeChange(AppThemeColor.RED) }
-                        )
-                        ThemeColorButton(
-                            color = Color(0xFF2E7D32), // Green
-                            isSelected = currentTheme == AppThemeColor.GREEN,
-                            onClick = { onThemeChange(AppThemeColor.GREEN) }
-                        )
-                        ThemeColorButton(
-                            color = Color(0xFF1565C0), // Blue
-                            isSelected = currentTheme == AppThemeColor.BLUE,
-                            onClick = { onThemeChange(AppThemeColor.BLUE) }
-                        )
-                        ThemeColorButton(
-                            color = Color(0xFFEF6C00), // Orange
-                            isSelected = currentTheme == AppThemeColor.ORANGE,
-                            onClick = { onThemeChange(AppThemeColor.ORANGE) }
-                        )
-                    }
                 }
             }
         }
     }
 }
 
-@Composable
-fun ThemeColorButton(
-    color: Color,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .size(48.dp)
-            .background(color = color, shape = CircleShape)
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) {
-        if (isSelected) {
-            Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = "Selected",
-                tint = Color.White
-            )
-        }
-    }
-}
-
-@Composable
-fun ThemeModeButton(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Button(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-            contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-        ),
-        shape = RoundedCornerShape(20.dp),
-        modifier = Modifier.padding(horizontal = 4.dp)
-    ) {
-        Text(text)
-    }
-}
 
 @Composable
 fun InfoRow(
