@@ -121,10 +121,19 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun refreshArticles() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isRefreshing = true) }
+            _uiState.update { it.copy(isRefreshing = true, error = null) }
             try {
-                val articles = repository.getHomeArticles(_uiState.value.homePage)
-                _uiState.update { it.copy(isRefreshing = false, isOffline = false, error = null, articles = articles) }
+                // Always refresh from page 1 with fresh data
+                val freshArticles = repository.getHomeArticles(1)
+                _uiState.update {
+                    it.copy(
+                        isRefreshing = false,
+                        isOffline = false,
+                        error = null,
+                        articles = freshArticles,
+                        homePage = 1
+                    )
+                }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isRefreshing = false, isOffline = true) }
             }

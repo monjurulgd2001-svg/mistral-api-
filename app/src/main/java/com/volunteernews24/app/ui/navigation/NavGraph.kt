@@ -140,6 +140,7 @@ fun VNNavGraph(
 
                 HomeScreen(
                     isLoading = uiState.isLoading,
+                    isRefreshing = uiState.isRefreshing,
                     isOffline = uiState.isOffline,
                     articles = uiState.articles,
                     categories = uiState.categories,

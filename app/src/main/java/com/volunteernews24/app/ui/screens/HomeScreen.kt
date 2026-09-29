@@ -1,6 +1,5 @@
 package com.volunteernews24.app.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.basicMarquee
@@ -17,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -38,7 +36,8 @@ import java.util.Locale
 @Composable
 fun HomeScreen(
     isLoading: Boolean,
-    isOffline: Boolean, // Kept for compatibility, though we are online-only now
+    isRefreshing: Boolean,
+    isOffline: Boolean,
     articles: List<Article>,
     categories: List<com.volunteernews24.app.data.model.Category>,
     currentPage: Int,
@@ -55,7 +54,6 @@ fun HomeScreen(
     onAboutClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var isRefreshing by remember { mutableStateOf(false) }
     var backPressedTime by remember { mutableLongStateOf(0L) }
     val context = LocalContext.current
 
@@ -68,11 +66,6 @@ fun HomeScreen(
         }
     }
 
-    LaunchedEffect(isLoading) {
-        if (!isLoading) {
-            isRefreshing = false
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -145,10 +138,7 @@ fun HomeScreen(
     ) { paddingValues ->
         PullToRefreshBox(
             isRefreshing = isRefreshing,
-            onRefresh = {
-                isRefreshing = true
-                onRefresh()
-            },
+            onRefresh = { onRefresh() },
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
@@ -253,20 +243,39 @@ fun HomeScreen(
 
                         // 0. Featured News Slider
                         if (featuredArticles.isNotEmpty()) {
-                            item {
-                                val pagerState = androidx.compose.foundation.pager.rememberPagerState(pageCount = { featuredArticles.size })
-                                
-                                // Auto-cycle logic
-                                LaunchedEffect(pagerState.currentPage) {
-                                    kotlinx.coroutines.delay(3500)
-                                    val nextPage = (pagerState.currentPage + 1) % featuredArticles.size
-                                    pagerState.animateScrollToPage(nextPage)
-                                }
+                            // pagerState MUST be outside item{} so it survives recomposition
+                            val pagerState = androidx.compose.foundation.pager.rememberPagerState(
+                                pageCount = { featuredArticles.size }
+                            )
 
+                            // Auto-cycle: runs once, re-triggers only when articles list changes
+                            LaunchedEffect(featuredArticles.size) {
+                                while (true) {
+                                    kotlinx.coroutines.delay(3500)
+                                    if (featuredArticles.size > 1) {
+                                        val next = (pagerState.currentPage + 1) % featuredArticles.size
+                                        try {
+                                            pagerState.animateScrollToPage(
+                                                next,
+                                                animationSpec = androidx.compose.animation.core.tween(
+                                                    durationMillis = 600,
+                                                    easing = androidx.compose.animation.core.FastOutSlowInEasing
+                                                )
+                                            )
+                                        } catch (_: Exception) {
+                                            // Interrupted by user swipe — just continue loop
+                                        }
+                                    }
+                                }
+                            }
+
+                            item(key = "featured_slider") {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     androidx.compose.foundation.pager.HorizontalPager(
                                         state = pagerState,
-                                        modifier = Modifier.fillMaxWidth().height(230.dp)
+                                        modifier = Modifier.fillMaxWidth().height(230.dp),
+                                        pageSpacing = 8.dp,
+                                        beyondViewportPageCount = 1
                                     ) { page ->
                                         val article = featuredArticles[page]
                                         FeaturedArticleCard(
@@ -274,21 +283,33 @@ fun HomeScreen(
                                             onClick = { onArticleClick(article) }
                                         )
                                     }
-                                    
-                                    // Pager indicators
+
+                                    // Pager indicators — animated dots
                                     Row(
                                         Modifier
                                             .fillMaxWidth()
                                             .padding(top = 8.dp),
-                                        horizontalArrangement = Arrangement.Center
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         repeat(featuredArticles.size) { iteration ->
-                                            val color = if (pagerState.currentPage == iteration) VNRed else androidx.compose.ui.graphics.Color.LightGray
+                                            val isSelected = pagerState.currentPage == iteration
+                                            val dotWidth by androidx.compose.animation.core.animateDpAsState(
+                                                targetValue = if (isSelected) 20.dp else 6.dp,
+                                                animationSpec = androidx.compose.animation.core.tween(300),
+                                                label = "dotWidth"
+                                            )
+                                            val dotColor = if (isSelected) VNRed
+                                                else androidx.compose.ui.graphics.Color.LightGray
                                             Box(
                                                 modifier = Modifier
-                                                    .padding(2.dp)
-                                                    .background(color, androidx.compose.foundation.shape.CircleShape)
-                                                    .size(6.dp)
+                                                    .padding(horizontal = 3.dp, vertical = 4.dp)
+                                                    .height(6.dp)
+                                                    .width(dotWidth)
+                                                    .background(
+                                                        dotColor,
+                                                        androidx.compose.foundation.shape.RoundedCornerShape(3.dp)
+                                                    )
                                             )
                                         }
                                     }

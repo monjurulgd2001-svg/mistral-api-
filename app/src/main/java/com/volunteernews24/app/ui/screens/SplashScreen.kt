@@ -1,331 +1,248 @@
 package com.volunteernews24.app.ui.screens
 
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import androidx.compose.ui.text.googlefonts.GoogleFont
-import androidx.compose.ui.text.googlefonts.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import com.volunteernews24.app.R
-
-val provider = GoogleFont.Provider(
-    providerAuthority = "com.google.android.gms.fonts",
-    providerPackage = "com.google.android.gms",
-    certificates = R.array.com_google_android_gms_fonts_certs
-)
-
-val robotoCondensedBlackItalic = FontFamily(
-    Font(
-        googleFont = GoogleFont("Roboto Condensed"),
-        fontProvider = provider,
-        weight = FontWeight.Black,
-        style = FontStyle.Italic
-    )
-)
+import kotlinx.coroutines.delay
 
 @Composable
 fun AnimatedSplashScreen(
     onSplashFinished: () -> Unit
 ) {
-    // 4 Second timer to finish splash screen
+    // Total duration = 4 seconds
     LaunchedEffect(key1 = true) {
-        delay(4000)
+        delay(4200)
         onSplashFinished()
     }
 
-    // Animation States
     var startAnimation by remember { mutableStateOf(false) }
+    var exitAnimation by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = true) {
+        delay(100)
         startAnimation = true
+        delay(3200)
+        exitAnimation = true
     }
 
-    // --- Volunteer Text Animations ---
-    val volunteerOffsetX by animateFloatAsState(
-        targetValue = if (startAnimation) 0f else -180f,
-        animationSpec = tween(durationMillis = 1000, easing = FastOutSlowInEasing)
-    )
-    val volunteerAlpha by animateFloatAsState(
-        targetValue = if (startAnimation) 1f else 0f,
-        animationSpec = tween(durationMillis = 1000)
-    )
-    val volunteerScale by animateFloatAsState(
-        targetValue = if (startAnimation) 1f else 0.7f,
-        animationSpec = tween(durationMillis = 1000, easing = FastOutSlowInEasing)
+    // === ENTRY animations ===
+
+    // Overall scale: starts tiny, zooms to normal with overshoot
+    val imageScale by animateFloatAsState(
+        targetValue = when {
+            exitAnimation -> 1.15f
+            startAnimation -> 1f
+            else -> 0.4f
+        },
+        animationSpec = if (exitAnimation)
+            tween(durationMillis = 600, easing = FastOutSlowInEasing)
+        else
+            spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            ),
+        label = "imageScale"
     )
 
-    // --- News Text Animations ---
-    val newsOffsetX by animateFloatAsState(
-        targetValue = if (startAnimation) 0f else -160f,
-        animationSpec = tween(durationMillis = 1000, delayMillis = 350, easing = FastOutSlowInEasing)
-    )
-    val newsAlpha by animateFloatAsState(
-        targetValue = if (startAnimation) 1f else 0f,
-        animationSpec = tween(durationMillis = 1000, delayMillis = 350)
+    // Alpha fade in
+    val imageAlpha by animateFloatAsState(
+        targetValue = when {
+            exitAnimation -> 0f
+            startAnimation -> 1f
+            else -> 0f
+        },
+        animationSpec = if (exitAnimation)
+            tween(durationMillis = 500, easing = FastOutLinearInEasing)
+        else
+            tween(durationMillis = 700),
+        label = "imageAlpha"
     )
 
-    // --- Globe Animations ---
-    val globeScale by animateFloatAsState(
-        targetValue = if (startAnimation) 1f else 0.3f,
-        animationSpec = tween(durationMillis = 1100, delayMillis = 500, easing = FastOutSlowInEasing)
+    // Slide up from bottom on entry
+    val imageOffsetY by animateFloatAsState(
+        targetValue = when {
+            exitAnimation -> -80f
+            startAnimation -> 0f
+            else -> 120f
+        },
+        animationSpec = if (exitAnimation)
+            tween(durationMillis = 500, easing = FastOutLinearInEasing)
+        else
+            spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessMediumLow
+            ),
+        label = "imageOffsetY"
     )
-    val globeRotation by animateFloatAsState(
-        targetValue = if (startAnimation) 0f else -60f,
-        animationSpec = tween(durationMillis = 1100, delayMillis = 500, easing = FastOutSlowInEasing)
+
+    // Rotation on entry: slight tilt then settles
+    val imageRotation by animateFloatAsState(
+        targetValue = if (startAnimation && !exitAnimation) 0f else if (exitAnimation) -5f else -8f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "imageRotation"
     )
-    val globeAlpha by animateFloatAsState(
-        targetValue = if (startAnimation) 1f else 0f,
-        animationSpec = tween(durationMillis = 1100, delayMillis = 500)
-    )
-    
-    // Continuous Globe Floating
-    val infiniteTransition = rememberInfiniteTransition()
-    val globeFloatY by infiniteTransition.animateFloat(
-        initialValue = -3f,
-        targetValue = 4f,
+
+    // Continuous floating effect
+    val infiniteTransition = rememberInfiniteTransition(label = "floating")
+    val floatY by infiniteTransition.animateFloat(
+        initialValue = -6f,
+        targetValue = 6f,
         animationSpec = infiniteRepeatable(
-            animation = tween(4000, easing = LinearEasing),
+            animation = tween(2800, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
-        )
+        ),
+        label = "floatY"
     )
 
-    // --- 24 Number Animations ---
-    val number24OffsetX by animateFloatAsState(
-        targetValue = if (startAnimation) 0f else 150f,
-        animationSpec = tween(durationMillis = 1150, delayMillis = 1000, easing = FastOutSlowInEasing)
-    )
-    val number24OffsetY by animateFloatAsState(
-        targetValue = if (startAnimation) 0f else -60f,
-        animationSpec = tween(durationMillis = 1150, delayMillis = 1000, easing = FastOutSlowInEasing)
-    )
-    val number24Alpha by animateFloatAsState(
-        targetValue = if (startAnimation) 1f else 0f,
-        animationSpec = tween(durationMillis = 1150, delayMillis = 1000)
-    )
-    val number24Rotation by animateFloatAsState(
-        targetValue = if (startAnimation) 0f else 20f,
-        animationSpec = tween(durationMillis = 1150, delayMillis = 1000, easing = FastOutSlowInEasing)
-    )
-    val number24Scale by animateFloatAsState(
-        targetValue = if (startAnimation) 1f else 0.35f,
-        animationSpec = tween(durationMillis = 1150, delayMillis = 1000, easing = FastOutSlowInEasing)
+    // Continuous glow pulse
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.7f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1800, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "glowAlpha"
     )
 
-    // --- Welcome Text Animations ---
-    val welcomeOffsetY by animateFloatAsState(
-        targetValue = if (startAnimation) 0f else 80f,
-        animationSpec = tween(durationMillis = 1000, delayMillis = 1700, easing = FastOutSlowInEasing)
-    )
-    val welcomeAlpha by animateFloatAsState(
-        targetValue = if (startAnimation) 1f else 0f,
-        animationSpec = tween(durationMillis = 1000, delayMillis = 1700)
+    // Background shimmer
+    val shimmerX by infiniteTransition.animateFloat(
+        initialValue = -1000f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "shimmer"
     )
 
-    // Layout
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        // Ambient Blue Glow in Background
+        // Background radial glow (red/blue matching the image colors)
         Box(
             modifier = Modifier
-                .align(Alignment.Center)
-                .offset(y = 20.dp)
+                .fillMaxSize()
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFF0D1A3A).copy(alpha = glowAlpha),
+                            Color.Black
+                        ),
+                        radius = 900f
+                    )
+                )
+        )
+
+        // Top-right accent glow
+        Box(
+            modifier = Modifier
+                .size(280.dp)
+                .align(Alignment.TopEnd)
+                .offset(x = 60.dp, y = (-40).dp)
+                .graphicsLayer { alpha = glowAlpha * 0.4f }
+                .blur(80.dp)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(Color(0xFFCC0000), Color.Transparent)
+                    )
+                )
+        )
+
+        // Bottom-left accent glow
+        Box(
+            modifier = Modifier
                 .size(220.dp)
-                .graphicsLayer {
-                    alpha = 0.15f
-                    shadowElevation = 20f
-                    shape = androidx.compose.foundation.shape.CircleShape
-                    clip = true
-                }
-                .background(Color(0xFF0066FF))
+                .align(Alignment.BottomStart)
+                .offset(x = (-40).dp, y = 40.dp)
+                .graphicsLayer { alpha = glowAlpha * 0.35f }
+                .blur(70.dp)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(Color(0xFF0055CC), Color.Transparent)
+                    )
+                )
         )
-        
-        // Ground Glow
+
+        // Main splash image with all animations combined
+        Image(
+            painter = painterResource(id = R.drawable.splash_image),
+            contentDescription = "VolunteerNews24 Splash",
+            modifier = Modifier
+                .fillMaxWidth(0.92f)
+                .aspectRatio(0.56f) // portrait 9:16 ratio
+                .align(Alignment.Center)
+                .graphicsLayer {
+                    scaleX = imageScale
+                    scaleY = imageScale
+                    alpha = imageAlpha
+                    translationY = imageOffsetY + (if (startAnimation && !exitAnimation) floatY else 0f)
+                    rotationZ = imageRotation
+                },
+            contentScale = ContentScale.Fit
+        )
+
+        // Bottom loading bar
+        val loadingProgress by animateFloatAsState(
+            targetValue = if (startAnimation) 1f else 0f,
+            animationSpec = tween(durationMillis = 3500, easing = LinearEasing),
+            label = "loadingBar"
+        )
+
         Box(
             modifier = Modifier
-                .align(Alignment.Center)
-                .offset(y = 120.dp)
-                .size(width = 200.dp, height = 20.dp)
-                .graphicsLayer {
-                    alpha = 0.15f
-                    shape = androidx.compose.foundation.shape.CircleShape
-                    clip = true
-                }
-                .background(Color(0xFF008CFF))
-        )
-
-        // 3D Wireframe Globe
-        Canvas(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .size(150.dp)
-                .graphicsLayer {
-                    alpha = globeAlpha
-                    scaleX = globeScale
-                    scaleY = globeScale
-                    rotationZ = globeRotation
-                    translationY = globeFloatY
-                }
-        ) {
-            val radius = size.width / 2f
-            
-            // Outer Circle
-            drawCircle(
-                color = Color(0xFF55D5FF),
-                radius = radius,
-                style = Stroke(width = 3.dp.toPx())
-            )
-            
-            // Longitudes (Vertical ellipses)
-            drawOval(
-                color = Color(0xFF8CDDFF),
-                topLeft = Offset(radius - (radius * 0.5f), 0f),
-                size = Size(radius, size.height),
-                style = Stroke(width = 1.dp.toPx()),
-                alpha = 0.45f
-            )
-            drawOval(
-                color = Color(0xFF8CDDFF),
-                topLeft = Offset(radius - (radius * 0.75f), 0f),
-                size = Size(radius * 1.5f, size.height),
-                style = Stroke(width = 1.dp.toPx()),
-                alpha = 0.22f
-            )
-
-            // Latitudes (Horizontal ellipses)
-            drawOval(
-                color = Color(0xFF8CDDFF),
-                topLeft = Offset(0f, radius - (radius * 0.3f)),
-                size = Size(size.width, radius * 0.6f),
-                style = Stroke(width = 1.dp.toPx()),
-                alpha = 0.4f
-            )
-            drawOval(
-                color = Color(0xFF8CDDFF),
-                topLeft = Offset(0f, radius - (radius * 0.6f)),
-                size = Size(size.width, radius * 1.2f),
-                style = Stroke(width = 1.dp.toPx()),
-                alpha = 0.22f
-            )
-            
-            // Orbit Red
-            drawOval(
-                color = Color(0xFFFF2020),
-                topLeft = Offset(-size.width * 0.2f, size.height * 0.1f),
-                size = Size(size.width * 1.4f, size.height * 0.6f),
-                style = Stroke(width = 3.dp.toPx())
-            )
-            
-            // Orbit Blue
-            drawOval(
-                color = Color(0xFF188AFF),
-                topLeft = Offset(-size.width * 0.1f, size.height * 0.2f),
-                size = Size(size.width * 1.2f, size.height * 0.5f),
-                style = Stroke(width = 2.dp.toPx())
-            )
-        }
-
-        // The Number 24 (Inside Globe)
-        Text(
-            text = "24",
-            color = Color(0xFFFF6969), // Red
-            fontSize = 78.sp,
-            fontWeight = FontWeight.ExtraBold,
-            fontFamily = robotoCondensedBlackItalic,
-            style = androidx.compose.ui.text.TextStyle(
-                shadow = Shadow(color = Color.Black, offset = Offset(0f, 6f), blurRadius = 4f)
-            ),
-            modifier = Modifier
-                .align(Alignment.Center)
-                .offset(x = (-10).dp, y = 5.dp)
-                .graphicsLayer {
-                    translationX = number24OffsetX
-                    translationY = number24OffsetY
-                    alpha = number24Alpha
-                    rotationZ = number24Rotation
-                    scaleX = number24Scale
-                    scaleY = number24Scale
-                }
-        )
-
-        // "Volunteer" Text
-        Text(
-            text = "Volunteer",
-            color = Color(0xFFFF1515), // Red
-            fontSize = 58.sp,
-            fontWeight = FontWeight.ExtraBold,
-            fontFamily = robotoCondensedBlackItalic,
-            style = androidx.compose.ui.text.TextStyle(
-                shadow = Shadow(color = Color(0xFF720000), offset = Offset(5f, 5f), blurRadius = 0f)
-            ),
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .offset(y = (-110).dp)
-                .padding(start = 24.dp)
-                .graphicsLayer {
-                    translationX = volunteerOffsetX
-                    alpha = volunteerAlpha
-                    scaleX = volunteerScale
-                    scaleY = volunteerScale
-                }
-        )
-
-        // "News" Text
-        Text(
-            text = "News",
-            color = Color.White, // White
-            fontSize = 68.sp,
-            fontWeight = FontWeight.ExtraBold,
-            fontFamily = robotoCondensedBlackItalic,
-            style = androidx.compose.ui.text.TextStyle(
-                shadow = Shadow(color = Color(0xFF555555), offset = Offset(5f, 5f), blurRadius = 0f)
-            ),
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .offset(y = (-40).dp)
-                .padding(start = 24.dp)
-                .graphicsLayer {
-                    translationX = newsOffsetX
-                    alpha = newsAlpha
-                }
-        )
-
-        // "Welcome" Text
-        Text(
-            text = "Welcome",
-            color = Color(0xFFFFD500), // Yellow/Gold
-            fontSize = 58.sp,
-            fontWeight = FontWeight.ExtraBold,
-            fontFamily = robotoCondensedBlackItalic,
-            style = androidx.compose.ui.text.TextStyle(
-                shadow = Shadow(color = Color(0xFF996200), offset = Offset(5f, 5f), blurRadius = 0f)
-            ),
-            modifier = Modifier
+                .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-                .offset(y = (-100).dp)
-                .graphicsLayer {
-                    translationY = welcomeOffsetY
-                    alpha = welcomeAlpha
-                }
-        )
+                .padding(bottom = 48.dp)
+        ) {
+            // Track
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.6f)
+                    .height(3.dp)
+                    .align(Alignment.Center)
+                    .background(
+                        Color.White.copy(alpha = 0.15f),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(2.dp)
+                    )
+            )
+            // Progress
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.6f * loadingProgress)
+                    .height(3.dp)
+                    .align(Alignment.CenterStart)
+                    .padding(start = (0.2f * 1f).dp) // centering offset
+                    .graphicsLayer { alpha = imageAlpha }
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(Color(0xFFFF2020), Color(0xFFFF8800))
+                            ),
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(2.dp)
+                        )
+                )
+            }
+        }
     }
 }
