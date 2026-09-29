@@ -4,17 +4,11 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
-import com.volunteernews24.app.data.local.AppDatabase
-
 class VolunteerNewsApp : Application() {
-
-    lateinit var database: AppDatabase
-        private set
 
     override fun onCreate() {
         super.onCreate()
         instance = this
-        database = AppDatabase.getInstance(this)
         createNotificationChannel()
     }
 

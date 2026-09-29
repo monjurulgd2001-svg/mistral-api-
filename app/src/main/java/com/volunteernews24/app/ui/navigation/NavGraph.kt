@@ -126,7 +126,8 @@ fun VNNavGraph(
                         val encodedUrl = URLEncoder.encode(article.url, StandardCharsets.UTF_8.toString())
                         navController.navigate("article_detail/$encodedUrl")
                     },
-                    onBookmarkClick = { url -> viewModel.toggleBookmark(url) }
+                    onBookmarkClick = { url -> viewModel.toggleBookmark(url) },
+                    onAboutClick = { navController.navigate("about") }
                 )
             }
             
@@ -202,6 +203,12 @@ fun VNNavGraph(
                     isLoading = uiState.isArticleLoading,
                     onLoadArticle = { viewModel.loadArticleDetail(it) },
                     onBookmarkClick = { articleUrl -> viewModel.toggleBookmark(articleUrl) },
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
+            
+            composable("about") {
+                AboutScreen(
                     onBackClick = { navController.popBackStack() }
                 )
             }

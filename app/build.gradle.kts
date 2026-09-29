@@ -3,7 +3,6 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.gms.google-services")
-    id("com.google.devtools.ksp")
 }
 
 android {
@@ -69,10 +68,8 @@ dependencies {
     // Navigation Compose
     implementation("androidx.navigation:navigation-compose:2.8.5")
 
-    // Room Database (Offline Caching)
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
+    // Gson (for SharedPreferences/DataStore serialization)
+    implementation("com.google.code.gson:gson:2.11.0")
 
     // Jsoup (Web Scraping)
     implementation("org.jsoup:jsoup:1.18.3")
