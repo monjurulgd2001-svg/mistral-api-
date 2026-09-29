@@ -114,6 +114,12 @@ jobs:
           echo "name=$OUT_NAME" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Sign APK
+        run: |
+          set -euo pipefail
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)
+          "$APKSIGNER" sign --ks "$KEYSTORE_PATH" --ks-pass "env:KEYSTORE_PASSWORD" --ks-key-alias "$KEY_ALIAS" --key-pass "env:KEY_PASSWORD" "${{ steps.apk.outputs.path }}"
+
       - name: Verify APK signature
         run: |
           set -euo pipefail
