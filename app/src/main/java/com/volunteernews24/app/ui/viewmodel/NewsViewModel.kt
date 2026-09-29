@@ -7,8 +7,11 @@ import com.volunteernews24.app.VolunteerNewsApp
 import com.volunteernews24.app.data.model.Article
 import com.volunteernews24.app.data.model.Category
 import com.volunteernews24.app.data.model.Ebook
-import com.volunteernews24.app.data.repository.BookmarkManager
+import com.volunteernews24.app.data.repository.InboxManager
+import com.volunteernews24.app.data.repository.InboxMessage
 import com.volunteernews24.app.data.repository.NewsRepository
+import com.volunteernews24.app.data.repository.WeatherInfo
+import com.volunteernews24.app.data.repository.WeatherManager
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -22,17 +25,20 @@ data class UiState(
     val searchResults: List<Article> = emptyList(),
     val categories: List<Category> = emptyList(),
     val ebooks: List<Ebook> = emptyList(),
+    val inboxMessages: List<InboxMessage> = emptyList(),
     val currentArticle: Article? = null,
     val isArticleLoading: Boolean = false,
     val isOffline: Boolean = false,
     val bookmarkMessage: String? = null,
     val homePage: Int = 1,
-    val categoryPage: Int = 1
+    val categoryPage: Int = 1,
+    val weatherInfo: WeatherInfo? = null
 )
 
 class NewsViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = NewsRepository(BookmarkManager(application))
+    private val repository = NewsRepository(com.volunteernews24.app.data.repository.BookmarkManager(application))
+    private val inboxManager = InboxManager(application)
 
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
@@ -41,6 +47,29 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
         observeBookmarks()
         loadHomeArticles()
         loadCategories()
+        loadWeather()
+        observeInbox()
+    }
+
+    private fun observeInbox() {
+        viewModelScope.launch {
+            inboxManager.inboxMessages.collect { messages ->
+                _uiState.update { it.copy(inboxMessages = messages) }
+            }
+        }
+    }
+
+    fun clearInbox() {
+        viewModelScope.launch {
+            inboxManager.clearMessages()
+        }
+    }
+
+    private fun loadWeather() {
+        viewModelScope.launch {
+            val weather = WeatherManager.fetchCurrentWeather()
+            _uiState.update { it.copy(weatherInfo = weather) }
+        }
     }
 
     private fun observeBookmarks() {

@@ -6,8 +6,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -32,8 +32,16 @@ fun CategoryScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var isRefreshing by remember { mutableStateOf(false) }
+
     LaunchedEffect(categoryUrl) {
         onLoadCategory(categoryUrl)
+    }
+
+    LaunchedEffect(isLoading) {
+        if (!isLoading) {
+            isRefreshing = false
+        }
     }
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -59,17 +67,26 @@ fun CategoryScreen(
                 items(5) { ArticleCardShimmer() }
             }
         } else if (articles.isNotEmpty()) {
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = {
+                    isRefreshing = true
+                    onLoadCategory(categoryUrl)
+                },
+                modifier = Modifier.weight(1f).fillMaxWidth()
             ) {
-                items(articles) { article ->
-                    ArticleCard(
-                        article = article,
-                        onClick = { onArticleClick(article) },
-                        onBookmarkClick = { onBookmarkClick(article.url) }
-                    )
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(articles) { article ->
+                        ArticleCard(
+                            article = article,
+                            onClick = { onArticleClick(article) },
+                            onBookmarkClick = { onBookmarkClick(article.url) }
+                        )
+                    }
                 }
             }
         } else if (!isLoading) {

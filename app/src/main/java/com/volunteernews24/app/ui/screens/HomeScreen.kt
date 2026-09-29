@@ -9,20 +9,25 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.activity.compose.BackHandler
+import android.widget.Toast
 import coil.compose.AsyncImage
 import com.volunteernews24.app.R
 import com.volunteernews24.app.data.model.Article
+import com.volunteernews24.app.data.repository.WeatherInfo
 import com.volunteernews24.app.ui.components.*
 import com.volunteernews24.app.ui.theme.VNRed
 import java.text.SimpleDateFormat
@@ -39,12 +44,27 @@ fun HomeScreen(
     onNextPage: () -> Unit,
     onPreviousPage: () -> Unit,
     onRefresh: () -> Unit,
+    weatherInfo: WeatherInfo?,
+    searchQuery: String,
+    searchResults: List<Article>,
+    onSearchQueryChange: (String) -> Unit,
     onArticleClick: (Article) -> Unit,
     onBookmarkClick: (String) -> Unit,
     onAboutClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isRefreshing by remember { mutableStateOf(false) }
+    var backPressedTime by remember { mutableLongStateOf(0L) }
+    val context = LocalContext.current
+
+    BackHandler(enabled = true) {
+        if (System.currentTimeMillis() - backPressedTime < 2000) {
+            (context as? android.app.Activity)?.finish()
+        } else {
+            backPressedTime = System.currentTimeMillis()
+            Toast.makeText(context, "অ্যাপ থেকে বের হতে আবার ব্যাক প্রেস করুন", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     LaunchedEffect(isLoading) {
         if (!isLoading) {
@@ -54,9 +74,33 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
-                    Column {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 4.dp)
+                        ) {
+                            Text(
+                                text = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale("bn", "BD")).format(Date()),
+                                fontSize = 12.sp,
+                                color = androidx.compose.ui.graphics.Color.DarkGray
+                            )
+                            
+                            if (weatherInfo != null) {
+                                Text(
+                                    text = " | ${weatherInfo.city}: ${weatherInfo.temperatureCelsius}°C",
+                                    fontSize = 12.sp,
+                                    color = VNRed,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+
                         val context = androidx.compose.ui.platform.LocalContext.current
                         val imageLoader = remember {
                             coil.ImageLoader.Builder(context)
@@ -72,21 +116,11 @@ fun HomeScreen(
                                 .fillMaxWidth()
                                 .padding(bottom = 4.dp),
                             contentScale = ContentScale.Fit,
-                            alignment = Alignment.CenterStart
-                        )
-                        Text(
-                            text = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale("bn", "BD")).format(Date()),
-                            fontSize = 12.sp,
-                            color = androidx.compose.ui.graphics.Color.DarkGray
+                            alignment = Alignment.Center
                         )
                     }
                 },
-                actions = {
-                    IconButton(onClick = onAboutClick) {
-                        Icon(Icons.Default.Info, contentDescription = "About Us", tint = VNRed)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = androidx.compose.ui.graphics.Color.White,
                     titleContentColor = androidx.compose.ui.graphics.Color.Black
                 )
@@ -110,6 +144,25 @@ fun HomeScreen(
                 contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                // Search Bar
+                item {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = onSearchQueryChange,
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text(stringResource(R.string.search_hint)) },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent
+                        )
+                    )
+                }
+
                 if (isOffline) {
                     item {
                         OfflineBanner()
@@ -119,6 +172,30 @@ fun HomeScreen(
                 if (isLoading && articles.isEmpty()) {
                     items(5) {
                         ArticleCardShimmer()
+                    }
+                } else if (searchQuery.isNotBlank()) {
+                    if (searchResults.isEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "কোনো সংবাদ পাওয়া যায়নি",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    } else {
+                        items(searchResults) { article ->
+                            ArticleCard(
+                                article = article,
+                                onClick = { onArticleClick(article) },
+                                onBookmarkClick = { onBookmarkClick(article.url) }
+                            )
+                        }
                     }
                 } else if (articles.isNotEmpty()) {
                     
@@ -214,8 +291,8 @@ fun HomeScreen(
                     }
                 }
 
-                // 4. Pagination (Always show if not loading so user can go back)
-                if (!isLoading) {
+                // 4. Pagination (Always show if not loading so user can go back, but hide during search)
+                if (!isLoading && searchQuery.isBlank()) {
                     item {
                         PaginationControls(
                             currentPage = currentPage,

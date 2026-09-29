@@ -10,6 +10,10 @@ import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.filled.Inbox
+import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -43,13 +47,17 @@ sealed class Screen(
     object Categories : Screen("categories", R.string.categories, Icons.Filled.Category, Icons.Outlined.Category)
     object Bookmarks : Screen("bookmarks", R.string.bookmarks, Icons.Filled.Bookmark, Icons.Outlined.BookmarkBorder)
     object Library : Screen("library", R.string.library, Icons.Filled.Book, Icons.Outlined.Book)
+    object Inbox : Screen("inbox", R.string.inbox_title, Icons.Filled.Inbox, Icons.Outlined.Inbox)
+    object About : Screen("about", R.string.info, Icons.Filled.Info, Icons.Outlined.Info)
 }
 
 val bottomNavScreens = listOf(
     Screen.Home,
     Screen.Categories,
+    Screen.Inbox,
     Screen.Bookmarks,
-    Screen.Library
+    Screen.Library,
+    Screen.About
 )
 
 @Composable
@@ -129,6 +137,8 @@ fun VNNavGraph(
             }
             
             composable(Screen.Home.route) {
+                var searchQuery by androidx.compose.runtime.rememberSaveable { androidx.compose.runtime.mutableStateOf("") }
+
                 HomeScreen(
                     isLoading = uiState.isLoading,
                     isOffline = uiState.isOffline,
@@ -137,6 +147,13 @@ fun VNNavGraph(
                     onNextPage = { viewModel.nextHomePage() },
                     onPreviousPage = { viewModel.previousHomePage() },
                     onRefresh = { viewModel.refreshArticles() },
+                    weatherInfo = uiState.weatherInfo,
+                    searchQuery = searchQuery,
+                    searchResults = uiState.searchResults,
+                    onSearchQueryChange = { 
+                        searchQuery = it
+                        viewModel.searchArticles(it)
+                    },
                     onArticleClick = { article ->
                         val encodedUrl = URLEncoder.encode(article.url, StandardCharsets.UTF_8.toString())
                         navController.navigate("article_detail/$encodedUrl")
@@ -165,6 +182,19 @@ fun VNNavGraph(
                         navController.navigate("article_detail/$encodedUrl")
                     },
                     onBookmarkClick = { url -> viewModel.toggleBookmark(url) }
+                )
+            }
+            
+            composable(Screen.Inbox.route) {
+                InboxScreen(
+                    messages = uiState.inboxMessages,
+                    onMessageClick = { message ->
+                        if (!message.url.isNullOrBlank()) {
+                            val encodedUrl = URLEncoder.encode(message.url, StandardCharsets.UTF_8.toString())
+                            navController.navigate("article_detail/$encodedUrl")
+                        }
+                    },
+                    onClearAll = { viewModel.clearInbox() }
                 )
             }
             
@@ -227,9 +257,12 @@ fun VNNavGraph(
             
             composable("about") {
                 val currentTheme by themeViewModel.currentTheme.collectAsState()
+                val currentMode by themeViewModel.currentMode.collectAsState()
                 AboutScreen(
                     currentTheme = currentTheme,
+                    currentMode = currentMode,
                     onThemeChange = { themeViewModel.setTheme(it) },
+                    onModeChange = { themeViewModel.setMode(it) },
                     onBackClick = { navController.popBackStack() }
                 )
             }

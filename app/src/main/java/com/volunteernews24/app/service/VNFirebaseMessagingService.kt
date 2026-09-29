@@ -10,6 +10,10 @@ import com.google.firebase.messaging.RemoteMessage
 import com.volunteernews24.app.MainActivity
 import com.volunteernews24.app.R
 import com.volunteernews24.app.VolunteerNewsApp
+import com.volunteernews24.app.data.repository.InboxManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * Firebase Cloud Messaging service that handles push notifications
@@ -54,6 +58,12 @@ class VNFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     private fun sendNotification(title: String, body: String, articleUrl: String?) {
+        // Save to Inbox
+        CoroutineScope(Dispatchers.IO).launch {
+            val inboxManager = InboxManager(this@VNFirebaseMessagingService)
+            inboxManager.addMessage(title, body, articleUrl)
+        }
+
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             articleUrl?.let { putExtra("article_url", it) }

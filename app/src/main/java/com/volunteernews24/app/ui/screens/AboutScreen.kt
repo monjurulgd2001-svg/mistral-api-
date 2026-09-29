@@ -26,12 +26,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.volunteernews24.app.ui.theme.VNRed
 import com.volunteernews24.app.data.repository.AppThemeColor
+import com.volunteernews24.app.data.repository.AppThemeMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
     currentTheme: AppThemeColor,
+    currentMode: AppThemeMode,
     onThemeChange: (AppThemeColor) -> Unit,
+    onModeChange: (AppThemeMode) -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -165,6 +168,35 @@ fun AboutScreen(
                     )
                     
                     Row(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        ThemeModeButton(
+                            text = "সিস্টেম",
+                            isSelected = currentMode == AppThemeMode.SYSTEM,
+                            onClick = { onModeChange(AppThemeMode.SYSTEM) }
+                        )
+                        ThemeModeButton(
+                            text = "লাইট",
+                            isSelected = currentMode == AppThemeMode.LIGHT,
+                            onClick = { onModeChange(AppThemeMode.LIGHT) }
+                        )
+                        ThemeModeButton(
+                            text = "ডার্ক",
+                            isSelected = currentMode == AppThemeMode.DARK,
+                            onClick = { onModeChange(AppThemeMode.DARK) }
+                        )
+                    }
+
+                    Text(
+                        text = "অ্যাপের কালার নির্ধারণ করুন",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+                    
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
@@ -215,6 +247,25 @@ fun ThemeColorButton(
                 tint = Color.White
             )
         }
+    }
+}
+
+@Composable
+fun ThemeModeButton(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+            contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+        ),
+        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier.padding(horizontal = 4.dp)
+    ) {
+        Text(text)
     }
 }
 

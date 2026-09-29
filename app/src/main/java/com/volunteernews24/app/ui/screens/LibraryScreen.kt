@@ -11,8 +11,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,9 +44,16 @@ fun LibraryScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    var isRefreshing by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         onLoadEbooks()
+    }
+
+    LaunchedEffect(isLoading) {
+        if (!isLoading) {
+            isRefreshing = false
+        }
     }
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -58,21 +70,30 @@ fun LibraryScreen(
                 CircularProgressIndicator(color = VNRed)
             }
         } else if (ebooks.isNotEmpty()) {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 150.dp),
-                contentPadding = PaddingValues(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.fillMaxSize()
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = {
+                    isRefreshing = true
+                    onLoadEbooks()
+                },
+                modifier = Modifier.weight(1f).fillMaxWidth()
             ) {
-                items(ebooks) { ebook ->
-                    EbookCard(
-                        ebook = ebook,
-                        onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(ebook.pdfUrl))
-                            context.startActivity(intent)
-                        }
-                    )
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 150.dp),
+                    contentPadding = PaddingValues(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(ebooks) { ebook ->
+                        EbookCard(
+                            ebook = ebook,
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(ebook.pdfUrl))
+                                context.startActivity(intent)
+                            }
+                        )
+                    }
                 }
             }
         } else {
