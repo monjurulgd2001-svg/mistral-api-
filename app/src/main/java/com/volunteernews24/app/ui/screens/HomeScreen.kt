@@ -275,6 +275,56 @@ fun HomeScreen(
                     }
                 }
 
+                // 1. Running News (Breaking News Ticker)
+                if (articles.isNotEmpty() && searchQuery.isBlank()) {
+                    item {
+                        val tickerNews = articles.take(10)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(androidx.compose.ui.graphics.Color(0xFFFFF0F0), shape = MaterialTheme.shapes.small)
+                                .padding(4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .background(VNRed, shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = "তাজা খবর",
+                                    fontWeight = FontWeight.Bold,
+                                    color = androidx.compose.ui.graphics.Color.White,
+                                    fontSize = 12.sp
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Row(
+                                modifier = Modifier.basicMarquee(
+                                    iterations = Int.MAX_VALUE,
+                                    velocity = 35.dp
+                                )
+                            ) {
+                                tickerNews.forEachIndexed { index, article ->
+                                    Text(
+                                        text = article.title,
+                                        modifier = Modifier.clickable { onArticleClick(article) },
+                                        color = VNRed,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    if (index < tickerNews.size - 1) {
+                                        Text(
+                                            text = " • ",
+                                            color = VNRed,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 if (isOffline) {
                     item {
                         OfflineBanner()
@@ -348,54 +398,7 @@ fun HomeScreen(
                             }
                         }
 
-                        // 1. Running News (Breaking News Ticker)
-                        if (runningNews.isNotEmpty()) {
-                            item {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(androidx.compose.ui.graphics.Color(0xFFFFF0F0), shape = MaterialTheme.shapes.small)
-                                        .padding(4.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .background(VNRed, shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
-                                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    ) {
-                                        Text(
-                                            text = "তাজা খবর",
-                                            fontWeight = FontWeight.Bold,
-                                            color = androidx.compose.ui.graphics.Color.White,
-                                            fontSize = 12.sp
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Row(
-                                        modifier = Modifier.basicMarquee(
-                                            iterations = Int.MAX_VALUE,
-                                            velocity = 35.dp
-                                        )
-                                    ) {
-                                        runningNews.forEachIndexed { index, article ->
-                                            Text(
-                                                text = article.title,
-                                                modifier = Modifier.clickable { onArticleClick(article) },
-                                                color = VNRed,
-                                                fontWeight = FontWeight.Medium
-                                            )
-                                            if (index < runningNews.size - 1) {
-                                                Text(
-                                                    text = " • ",
-                                                    color = VNRed,
-                                                    fontWeight = FontWeight.Medium
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+
 
                         // 2. Latest News
                         if (latestNews.isNotEmpty()) {
