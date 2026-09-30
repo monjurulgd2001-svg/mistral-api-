@@ -139,15 +139,21 @@ fun AnimatedSplashScreen(
     ) {
 
 
+        val context = androidx.compose.ui.platform.LocalContext.current
+        val imageLoader = remember {
+            coil.ImageLoader.Builder(context)
+                .components { add(coil.decode.SvgDecoder.Factory()) }
+                .build()
+        }
+
         // Main splash image with all animations combined
-        Image(
-            painter = painterResource(id = R.drawable.app_icon),
+        coil.compose.AsyncImage(
+            model = R.raw.new_logo,
+            imageLoader = imageLoader,
             contentDescription = "VolunteerNews24 Splash",
             modifier = Modifier
-                .fillMaxWidth(0.45f)
-                .aspectRatio(1f) // Square aspect ratio for the app icon
+                .fillMaxWidth(0.65f)
                 .align(Alignment.Center)
-                .clip(androidx.compose.foundation.shape.RoundedCornerShape(24.dp))
                 .graphicsLayer {
                     scaleX = imageScale
                     scaleY = imageScale
