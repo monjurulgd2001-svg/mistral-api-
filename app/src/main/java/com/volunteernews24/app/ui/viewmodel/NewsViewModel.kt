@@ -65,9 +65,9 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun loadWeather() {
+    fun loadWeather() {
         viewModelScope.launch {
-            val weather = WeatherManager.fetchCurrentWeather()
+            val weather = WeatherManager.fetchCurrentWeather(getApplication())
             _uiState.update { it.copy(weatherInfo = weather) }
         }
     }

@@ -54,10 +54,31 @@ fun HomeScreen(
     onBookmarkClick: (String) -> Unit,
     onAboutClick: () -> Unit,
     onInboxClick: () -> Unit,
+    onWeatherRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var backPressedTime by remember { mutableLongStateOf(0L) }
     val context = LocalContext.current
+
+    val locationPermissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions[android.Manifest.permission.ACCESS_FINE_LOCATION] == true || 
+            permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
+            onWeatherRetry()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            locationPermissionLauncher.launch(
+                arrayOf(
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
 
     BackHandler(enabled = true) {
         if (System.currentTimeMillis() - backPressedTime < 2000) {
@@ -91,22 +112,53 @@ fun HomeScreen(
                     
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         if (weatherInfo != null) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "${weatherInfo.city} | ${weatherInfo.temperatureCelsius}°C",
-                                    fontSize = 11.sp,
-                                    color = androidx.compose.ui.graphics.Color.LightGray
-                                )
-                                if (weatherInfo.iconUrl.isNotEmpty()) {
+                            if (weatherInfo.error != null) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.androidx.compose.foundation.clickable {
+                                        if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                                            locationPermissionLauncher.launch(
+                                                arrayOf(
+                                                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                                                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                                                )
+                                            )
+                                        } else {
+                                            onWeatherRetry()
+                                        }
+                                    }.padding(end = 8.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Refresh,
+                                        contentDescription = "Retry Weather",
+                                        tint = androidx.compose.ui.graphics.Color.LightGray,
+                                        modifier = Modifier.size(14.dp)
+                                    )
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    AsyncImage(
-                                        model = weatherInfo.iconUrl,
-                                        contentDescription = "Weather Icon",
-                                        modifier = Modifier.size(24.dp)
+                                    Text(
+                                        text = weatherInfo.error,
+                                        fontSize = 11.sp,
+                                        color = androidx.compose.ui.graphics.Color.LightGray
                                     )
                                 }
+                            } else {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "${weatherInfo.city} | ${weatherInfo.temperatureCelsius}°C",
+                                        fontSize = 11.sp,
+                                        color = androidx.compose.ui.graphics.Color.LightGray
+                                    )
+                                    if (weatherInfo.iconUrl.isNotEmpty()) {
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        AsyncImage(
+                                            model = weatherInfo.iconUrl,
+                                            contentDescription = "Weather Icon",
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
                             }
-                            Spacer(modifier = Modifier.width(8.dp))
                         }                        
                         IconButton(
                             onClick = onAboutClick,

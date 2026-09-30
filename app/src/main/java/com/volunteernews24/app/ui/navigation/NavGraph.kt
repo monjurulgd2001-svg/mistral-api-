@@ -166,7 +166,8 @@ fun VNNavGraph(
                         navController.navigate("category/$encodedName/$encodedUrl")
                     },
                     onAboutClick = { navController.navigate("about") },
-                    onInboxClick = { navController.navigate(Screen.Inbox.route) }
+                    onInboxClick = { navController.navigate(Screen.Inbox.route) },
+                    onWeatherRetry = { viewModel.loadWeather() }
                 )
             }
             
