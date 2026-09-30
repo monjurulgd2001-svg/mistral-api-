@@ -136,50 +136,7 @@ fun AnimatedSplashScreen(
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        // Background radial glow (red/blue matching the image colors)
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFF0D1A3A).copy(alpha = glowAlpha),
-                            Color.Black
-                        ),
-                        radius = 900f
-                    )
-                )
-        )
 
-        // Top-right accent glow
-        Box(
-            modifier = Modifier
-                .size(280.dp)
-                .align(Alignment.TopEnd)
-                .offset(x = 60.dp, y = (-40).dp)
-                .graphicsLayer { alpha = glowAlpha * 0.4f }
-                .blur(80.dp)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(Color(0xFFCC0000), Color.Transparent)
-                    )
-                )
-        )
-
-        // Bottom-left accent glow
-        Box(
-            modifier = Modifier
-                .size(220.dp)
-                .align(Alignment.BottomStart)
-                .offset(x = (-40).dp, y = 40.dp)
-                .graphicsLayer { alpha = glowAlpha * 0.35f }
-                .blur(70.dp)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(Color(0xFF0055CC), Color.Transparent)
-                    )
-                )
-        )
 
         // Main splash image with all animations combined
         Image(

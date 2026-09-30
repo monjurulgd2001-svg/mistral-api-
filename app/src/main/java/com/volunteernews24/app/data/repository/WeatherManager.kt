@@ -60,7 +60,59 @@ object WeatherManager {
             if (temperature == null || temperature.isNaN()) return@withContext null
             val roundedTemp = Math.round(temperature * 10.0) / 10.0
 
-            WeatherInfo(city, roundedTemp, iconUrl)
+            var finalLocationName = city
+            try {
+                val mapsApiKey = com.volunteernews24.app.BuildConfig.MAPS_API_KEY
+                if (mapsApiKey.isNotEmpty()) {
+                    val geoUrl = URL("https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lon&key=$mapsApiKey")
+                    val geoConn = geoUrl.openConnection() as HttpURLConnection
+                    geoConn.connectTimeout = 3000
+                    geoConn.readTimeout = 3000
+                    val geoResponse = geoConn.inputStream.bufferedReader().readText()
+                    val geoJson = JSONObject(geoResponse)
+                    
+                    var unionName = ""
+                    var districtName = ""
+                    
+                    val results = geoJson.optJSONArray("results")
+                    if (results != null && results.length() > 0) {
+                        val addressComponents = results.getJSONObject(0).optJSONArray("address_components")
+                        if (addressComponents != null) {
+                            for (i in 0 until addressComponents.length()) {
+                                val component = addressComponents.getJSONObject(i)
+                                val types = component.optJSONArray("types")
+                                if (types != null) {
+                                    var isSublocality = false
+                                    var isDistrict = false
+                                    for (j in 0 until types.length()) {
+                                        val type = types.optString(j)
+                                        if (type == "sublocality_level_1" || type == "administrative_area_level_4" || type == "administrative_area_level_3" || type.equals("union", ignoreCase = true)) {
+                                            isSublocality = true
+                                        }
+                                        if (type == "administrative_area_level_2") {
+                                            isDistrict = true
+                                        }
+                                    }
+                                    if (isSublocality && unionName.isEmpty()) unionName = component.optString("long_name")
+                                    if (isDistrict && districtName.isEmpty()) districtName = component.optString("long_name")
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (unionName.isNotEmpty() && districtName.isNotEmpty()) {
+                        finalLocationName = "$unionName, $districtName"
+                    } else if (unionName.isNotEmpty()) {
+                        finalLocationName = unionName
+                    } else if (districtName.isNotEmpty()) {
+                        finalLocationName = districtName
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            WeatherInfo(finalLocationName, roundedTemp, iconUrl)
         } catch (e: SecurityException) {
             WeatherInfo("", 0.0, "", error = "Location permission denied.")
         } catch (e: Exception) {

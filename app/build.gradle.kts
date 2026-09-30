@@ -9,6 +9,13 @@ android {
     namespace = "com.volunteernews24.app"
     compileSdk = 35
 
+    val properties = java.util.Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        properties.load(java.io.FileInputStream(localPropertiesFile))
+    }
+    val mapsApiKey = properties.getProperty("MAPS_API_KEY") ?: ""
+
     defaultConfig {
         applicationId = "com.volunteernews24.app"
         minSdk = 26
@@ -20,6 +27,7 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
     }
 
     buildTypes {
@@ -41,6 +49,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     packaging {
         resources {

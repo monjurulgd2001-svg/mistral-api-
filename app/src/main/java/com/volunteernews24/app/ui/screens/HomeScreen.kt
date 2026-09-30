@@ -10,7 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Inbox
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -246,7 +246,7 @@ fun HomeScreen(
                                 onClick = onInboxClick,
                                 modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant, shape = androidx.compose.foundation.shape.CircleShape)
                             ) {
-                                Icon(Icons.Filled.Inbox, contentDescription = "Inbox", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Icon(Icons.Filled.Notifications, contentDescription = "Inbox", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                         
@@ -371,15 +371,28 @@ fun HomeScreen(
                                         )
                                     }
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = runningNews.joinToString(" • ") { it.title },
+                                    Row(
                                         modifier = Modifier.basicMarquee(
                                             iterations = Int.MAX_VALUE,
                                             velocity = 35.dp
-                                        ),
-                                        color = VNRed,
-                                        fontWeight = FontWeight.Medium
-                                    )
+                                        )
+                                    ) {
+                                        runningNews.forEachIndexed { index, article ->
+                                            Text(
+                                                text = article.title,
+                                                modifier = Modifier.clickable { onArticleClick(article) },
+                                                color = VNRed,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                            if (index < runningNews.size - 1) {
+                                                Text(
+                                                    text = " • ",
+                                                    color = VNRed,
+                                                    fontWeight = FontWeight.Medium
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

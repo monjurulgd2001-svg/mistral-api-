@@ -24,6 +24,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import android.net.Uri
 import com.volunteernews24.app.ui.theme.VNRed
 import com.volunteernews24.app.data.repository.AppThemeColor
 import com.volunteernews24.app.data.repository.AppThemeMode
@@ -176,6 +179,27 @@ fun AboutScreen(
                         }
                     )
                 }
+            }
+            
+            val context = LocalContext.current
+            Button(
+                onClick = {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/VolunteerNews24"))
+                    context.startActivity(intent)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1877F2)),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = "Follow Us on Facebook",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
             }
         }
     }
