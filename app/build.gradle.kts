@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -9,10 +12,10 @@ android {
     namespace = "com.volunteernews24.app"
     compileSdk = 35
 
-    val properties = java.util.Properties()
+    val properties = Properties()
     val localPropertiesFile = rootProject.file("local.properties")
     if (localPropertiesFile.exists()) {
-        properties.load(java.io.FileInputStream(localPropertiesFile))
+        properties.load(FileInputStream(localPropertiesFile))
     }
     val mapsApiKey = properties.getProperty("MAPS_API_KEY") ?: ""
 
