@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -140,12 +141,13 @@ fun AnimatedSplashScreen(
 
         // Main splash image with all animations combined
         Image(
-            painter = painterResource(id = R.drawable.splash_image),
+            painter = painterResource(id = R.drawable.app_icon),
             contentDescription = "VolunteerNews24 Splash",
             modifier = Modifier
-                .fillMaxWidth(0.92f)
-                .aspectRatio(0.56f) // portrait 9:16 ratio
+                .fillMaxWidth(0.45f)
+                .aspectRatio(1f) // Square aspect ratio for the app icon
                 .align(Alignment.Center)
+                .clip(androidx.compose.foundation.shape.RoundedCornerShape(24.dp))
                 .graphicsLayer {
                     scaleX = imageScale
                     scaleY = imageScale
